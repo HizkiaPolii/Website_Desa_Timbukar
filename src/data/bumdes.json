@@ -1,0 +1,52 @@
+{
+  "businessUnits": [
+    {
+      "id": "1",
+      "icon": "⛏️",
+      "title": "Tambang Batu Alam",
+      "description": "Usaha tambang batu alam berkualitas tinggi yang diproduksi dengan standar keselamatan internasional. Batu alam kami digunakan untuk konstruksi, dekorasi, dan keperluan industri.",
+      "features": [
+        "Batu alam premium berkualitas tinggi",
+        "Pengiriman ke seluruh wilayah",
+        "Harga kompetitif"
+      ],
+      "color": "blue"
+    },
+    {
+      "id": "2",
+      "icon": "🚣",
+      "title": "Arung Jeram",
+      "description": "Paket petualangan arung jeram yang menarik dengan dipandu oleh pemandu berpengalaman. Nikmati sensasi mengarungi sungai dengan pemandangan alam yang memukau.",
+      "features": [
+        "Pemandu profesional berpengalaman",
+        "Peralatan keselamatan lengkap",
+        "Paket group dan private tersedia"
+      ],
+      "color": "green"
+    },
+    {
+      "id": "3",
+      "icon": "💧",
+      "title": "Air Terjun",
+      "description": "Destinasi wisata air terjun alami dengan keindahan alam yang spektakuler. Tempat ideal untuk rekreasi keluarga, fotografi, dan menikmati kesegaran alam.",
+      "features": [
+        "Akses mudah dan aman",
+        "Fasilitas pendukung lengkap",
+        "Pemandangan alam yang menakjubkan"
+      ],
+      "color": "cyan"
+    },
+    {
+      "id": "4",
+      "icon": "🏠",
+      "title": "Homestay",
+      "description": "Akomodasi homestay yang nyaman dan ramah dengan sentuhan budaya lokal. Menginap bersama keluarga lokal dan rasakan pengalaman autentik desa.",
+      "features": [
+        "Ruangan bersih dan nyaman",
+        "Sarapan tradisional lokal",
+        "Harga terjangkau dan bersahabat"
+      ],
+      "color": "amber"
+    }
+  ]
+}

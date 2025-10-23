@@ -1,0 +1,108 @@
+{
+  "statistics": {
+    "populasi": "2,500",
+    "kepalakeluarga": "625",
+    "luasWilayah": "45.5 km²",
+    "angkaPertumbuhan": "2.5%",
+    "jumlahBayi": "180",
+    "angkaHarapanHidup": "72 Tahun"
+  },
+  "demographics": [
+    {
+      "kategori": "Usia 0-5 Tahun",
+      "persentase": "8%",
+      "jumlah": "200"
+    },
+    {
+      "kategori": "Usia 5-15 Tahun",
+      "persentase": "15%",
+      "jumlah": "375"
+    },
+    {
+      "kategori": "Usia 15-65 Tahun",
+      "persentase": "68%",
+      "jumlah": "1,700"
+    },
+    {
+      "kategori": "Usia 65+ Tahun",
+      "persentase": "9%",
+      "jumlah": "225"
+    }
+  ],
+  "gender": [
+    {
+      "jenis": "Laki-laki",
+      "jumlah": "1,275",
+      "persentase": "51%"
+    },
+    {
+      "jenis": "Perempuan",
+      "jumlah": "1,225",
+      "persentase": "49%"
+    }
+  ],
+  "education": [
+    {
+      "tingkat": "Tidak Sekolah",
+      "jumlah": "125",
+      "persentase": "5%"
+    },
+    {
+      "tingkat": "SD/Sederajat",
+      "jumlah": "625",
+      "persentase": "25%"
+    },
+    {
+      "tingkat": "SMP/Sederajat",
+      "jumlah": "750",
+      "persentase": "30%"
+    },
+    {
+      "tingkat": "SMA/Sederajat",
+      "jumlah": "700",
+      "persentase": "28%"
+    },
+    {
+      "tingkat": "D1/D2/D3",
+      "jumlah": "150",
+      "persentase": "6%"
+    },
+    {
+      "tingkat": "S1/S2/S3",
+      "jumlah": "175",
+      "persentase": "7%"
+    }
+  ],
+  "religion": [
+    {
+      "agama": "Islam",
+      "jumlah": "4",
+      "persentase": "0.16%"
+    },
+    {
+      "agama": "Kristen",
+      "jumlah": "1306",
+      "persentase": "52.24%"
+    },
+    {
+      "agama": "Katolik",
+      "jumlah": "1090",
+      "persentase": "43.6%"
+    },
+    {
+      "agama": "Hindu",
+      "jumlah": "50",
+      "persentase": "2%"
+    },
+    {
+      "agama": "Buddha",
+      "jumlah": "30",
+      "persentase": "1.2%"
+    },
+    {
+      "agama": "Lainnya",
+      "jumlah": "20",
+      "persentase": "0.8%"
+    }
+  ]
+}

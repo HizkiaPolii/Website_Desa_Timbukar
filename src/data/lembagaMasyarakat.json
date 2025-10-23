@@ -1,0 +1,37 @@
+{
+  "lembaga": [
+    {
+      "id": "1",
+      "nama": "BPD (Badan Permusyawaratan Desa)",
+      "pengertian": "Badan Permusyawaratan Desa (BPD) adalah lembaga yang berfungsi sebagai mitra kerja Pemerintah Desa dalam membuat kebijakan desa berdasarkan musyawarah. BPD merupakan representasi dari seluruh lapisan masyarakat desa yang dipilih secara demokratis.",
+      "fungsi": [
+        "Membentuk peraturan desa bersama kepala desa berdasarkan usulan kepala desa atau inisiatif BPD sendiri",
+        "Membahas dan menyepakati rancangan peraturan desa tentang APBDes (Anggaran Pendapatan dan Belanja Desa)",
+        "Melakukan pengawasan terhadap pelaksanaan peraturan desa dan peraturan kepala desa",
+        "Mengusulkan pengangkatan dan pemberhentian kepala desa kepada bupati/walikota",
+        "Membentuk panitia pemilihan kepala desa",
+        "Menerima laporan pertanggungjawaban kepala desa"
+      ],
+      "tugas": [
+        "Menjalankan fungsi legislasi desa",
+        "Menjalankan fungsi pengawasan",
+        "Menjalankan fungsi penggalian aspirasi",
+        "Melaksanakan tugas lain sesuai peraturan"
+      ],
+      "wewenang": [
+        "Membahas rancangan peraturan desa",
+        "Melakukan pengawasan kebijakan",
+        "Mengajukan pertanyaan kepada kepala desa",
+        "Memberikan saran dan masukan"
+      ],
+      "susunanKeanggotaan": "BPD terdiri dari ketua, wakil ketua, sekretaris, dan anggota-anggota. Jumlah anggota BPD ditetapkan dengan peraturan perundang-undangan berdasarkan jumlah penduduk desa.",
+      "masaJabatan": "BPD memiliki masa jabatan selama 6 tahun dan dapat dipilih kembali untuk 1 periode berikutnya.",
+      "prinsipKerja": {
+        "musyawarah": "Semua keputusan diambil melalui musyawarah untuk mencapai mufakat",
+        "transparan": "Segala keputusan dan kegiatan BPD harus terbuka untuk masyarakat",
+        "akuntabel": "BPD harus bertanggung jawab kepada masyarakat desa",
+        "demokratis": "Mengedepankan nilai-nilai demokrasi dalam setiap proses pengambilan keputusan"
+      }
+    }
+  ]
+}
