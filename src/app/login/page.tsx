@@ -8,7 +8,7 @@ import { loginUser, logoutUser } from "@/utils/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -22,14 +22,14 @@ export default function LoginPage() {
 
     try {
       // Validasi input
-      if (!email || !password) {
-        setError("Email dan password harus diisi");
+      if (!username || !password) {
+        setError("Username dan password harus diisi");
         setIsLoading(false);
         return;
       }
 
-      if (!email.includes("@")) {
-        setError("Format email tidak valid");
+      if (username.length < 3) {
+        setError("Username minimal 3 karakter");
         setIsLoading(false);
         return;
       }
@@ -41,7 +41,7 @@ export default function LoginPage() {
       }
 
       // Panggil backend API
-      const response = await loginUser(email, password);
+      const response = await loginUser(username, password);
 
       if (response.success && response.token) {
         // Simpan token dan user data
@@ -63,7 +63,7 @@ export default function LoginPage() {
           window.dispatchEvent(new Event("user-changed"));
         }, 100);
 
-        setEmail("");
+        setUsername("");
         setPassword("");
 
         // Redirect setelah 2 detik
@@ -129,20 +129,20 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Email Field */}
+            {/* Username Field */}
             <div>
               <label
-                htmlFor="email"
+                htmlFor="username"
                 className="block text-sm font-semibold text-gray-700 mb-2"
               >
-                Email
+                Username
               </label>
               <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="nama@example.com"
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Masukkan username Anda"
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
                 disabled={isLoading}
               />

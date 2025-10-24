@@ -81,7 +81,9 @@ export default function Navigation({ currentPage = "home" }: NavProps) {
   }, [user, isAdmin]);
 
   const handleLogout = () => {
+    // Clear localStorage
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
     setUser(null);
     setIsMenuOpen(false);
     // Trigger custom event untuk update Navigation component
@@ -158,14 +160,6 @@ export default function Navigation({ currentPage = "home" }: NavProps) {
 
             {/* Right Section - Dashboard & Mobile Menu */}
             <div className="flex items-center gap-2">
-              {/* Dashboard Button - Testing (Always Show) */}
-              <Link
-                href="/admin/dashboard"
-                className="px-3 py-1.5 rounded-md font-semibold text-xs lg:text-sm text-white bg-purple-600 hover:bg-purple-700 transition-all duration-200 whitespace-nowrap"
-              >
-                DASHBOARD
-              </Link>
-
               {/* Mobile Menu Button - Top Right */}
               <button
                 className="md:hidden p-2 rounded-lg hover:bg-emerald-500 text-white transition-colors"
@@ -191,6 +185,16 @@ export default function Navigation({ currentPage = "home" }: NavProps) {
 
             {/* Right Side - Action Buttons */}
             <div className="flex items-center gap-1 lg:gap-2 flex-wrap justify-end">
+              {/* Dashboard Button - Show for Admin Only (Desktop) */}
+              {isClient && isAdmin && (
+                <Link
+                  href="/admin/dashboard"
+                  className="px-2.5 lg:px-3 py-1.5 rounded-md font-semibold text-xs lg:text-sm text-white bg-purple-600 hover:bg-purple-700 transition-all duration-200 whitespace-nowrap"
+                >
+                  DASHBOARD
+                </Link>
+              )}
+
               {/* Login/User Button */}
               {isClient && !user ? (
                 <Link
@@ -234,17 +238,6 @@ export default function Navigation({ currentPage = "home" }: NavProps) {
                       className="block w-full px-4 py-2 rounded-md text-white bg-purple-600 hover:bg-purple-700 font-semibold text-sm text-center transition-all duration-200"
                     >
                       DASHBOARD
-                    </Link>
-                  )}
-
-                  {/* Contact Button - Show for Non-Admin (Mobile) */}
-                  {!isAdmin && (
-                    <Link
-                      href="/kontak"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="block w-full px-4 py-2 rounded-md text-white bg-red-600 hover:bg-red-700 font-semibold text-sm text-center transition-all duration-200"
-                    >
-                      KONTAK
                     </Link>
                   )}
                 </div>
