@@ -10,6 +10,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
+import {
+  getProfilDesa,
+  updateProfilDesa,
+  parseProfilDesaFromBackend,
+} from "@/services/profilDesaService";
 
 interface Misi {
   no: string;
@@ -18,10 +23,12 @@ interface Misi {
 }
 
 interface ProfileData {
+  id?: number;
   visi: string;
   misi: Misi[];
-  tujuan: string[];
+  tujuan?: string[];
   sejarah: string;
+  updated_at?: string;
 }
 
 interface NotificationState {
@@ -42,10 +49,15 @@ export default function EditProfilDesaPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/profil");
-        if (!response.ok) throw new Error("Gagal mengambil data");
-        const result = await response.json();
-        setData(result);
+        const result = await getProfilDesa();
+        if (result.success && result.data) {
+          setData(result.data);
+        } else {
+          showNotification(
+            "error",
+            result.error || "Gagal memuat data profil desa"
+          );
+        }
       } catch (error) {
         showNotification("error", "Gagal memuat data profil desa");
         console.error(error);
@@ -119,7 +131,7 @@ export default function EditProfilDesaPage() {
   };
 
   const handleTujuanChange = (index: number, value: string) => {
-    if (data) {
+    if (data && data.tujuan) {
       const newTujuan = [...data.tujuan];
       newTujuan[index] = value;
       setData({ ...data, tujuan: newTujuan });
@@ -130,13 +142,13 @@ export default function EditProfilDesaPage() {
     if (data) {
       setData({
         ...data,
-        tujuan: [...data.tujuan, "Target/tujuan baru..."],
+        tujuan: [...(data.tujuan || []), "Target/tujuan baru..."],
       });
     }
   };
 
   const handleDeleteTujuan = (index: number) => {
-    if (data) {
+    if (data && data.tujuan) {
       const newTujuan = data.tujuan.filter((_, i) => i !== index);
       setData({ ...data, tujuan: newTujuan });
     }
@@ -145,17 +157,43 @@ export default function EditProfilDesaPage() {
   const handleSave = async () => {
     if (!data) return;
 
+    // Validasi data
+    if (!data.visi.trim()) {
+      showNotification("error", "Visi tidak boleh kosong");
+      return;
+    }
+
+    if (data.misi.length === 0) {
+      showNotification("error", "Minimal harus ada satu misi");
+      return;
+    }
+
+    if (!data.sejarah.trim()) {
+      showNotification("error", "Sejarah tidak boleh kosong");
+      return;
+    }
+
+    // Validasi setiap misi
+    for (const misi of data.misi) {
+      if (!misi.title.trim()) {
+        showNotification("error", "Judul misi tidak boleh kosong");
+        return;
+      }
+      if (!misi.description.trim()) {
+        showNotification("error", "Deskripsi misi tidak boleh kosong");
+        return;
+      }
+    }
+
     setSaving(true);
     try {
-      const response = await fetch("/api/profil", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const result = await updateProfilDesa(data);
 
-      if (!response.ok) throw new Error("Gagal menyimpan data");
-
-      showNotification("success", "Data profil desa berhasil disimpan!");
+      if (result.success) {
+        showNotification("success", "Data profil desa berhasil disimpan!");
+      } else {
+        showNotification("error", result.error || "Gagal menyimpan data");
+      }
     } catch (error) {
       showNotification("error", "Gagal menyimpan data profil desa");
       console.error(error);
@@ -330,49 +368,6 @@ export default function EditProfilDesaPage() {
                       <p className="text-gray-700">{misi.description}</p>
                     </div>
                   )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Tujuan Section */}
-          <div className="bg-white rounded-lg shadow p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Target & Tujuan
-              </h2>
-              <button
-                onClick={handleAddTujuan}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-              >
-                <Plus size={18} />
-                Tambah Tujuan
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {data.tujuan.map((tujuan, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-4 p-3 border border-gray-200 rounded-lg hover:border-emerald-300 transition-colors group"
-                >
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      value={tujuan}
-                      onChange={(e) =>
-                        handleTujuanChange(index, e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-600"
-                      placeholder="Masukkan tujuan..."
-                    />
-                  </div>
-                  <button
-                    onClick={() => handleDeleteTujuan(index)}
-                    className="text-red-600 hover:text-red-700 transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 size={18} />
-                  </button>
                 </div>
               ))}
             </div>

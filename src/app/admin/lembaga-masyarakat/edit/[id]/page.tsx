@@ -126,9 +126,11 @@ export default function EditLembagaPage() {
     setSuccess("");
 
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`/api/lembaga-masyarakat?id=${id}`, {
         method: "PUT",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),

@@ -4,38 +4,35 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { loginUser, logoutUser } from "@/utils/api";
+import { loginUser } from "@/utils/api";
+import { showToast } from "@/utils/toast";
 
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
     setIsLoading(true);
 
     try {
       // Validasi input
       if (!username || !password) {
-        setError("Username dan password harus diisi");
+        showToast.error("Username dan password harus diisi");
         setIsLoading(false);
         return;
       }
 
       if (username.length < 3) {
-        setError("Username minimal 3 karakter");
+        showToast.error("Username minimal 3 karakter");
         setIsLoading(false);
         return;
       }
 
       if (password.length < 6) {
-        setError("Password minimal 6 karakter");
+        showToast.error("Password minimal 6 karakter");
         setIsLoading(false);
         return;
       }
@@ -56,7 +53,7 @@ export default function LoginPage() {
           redirectUrl = "/admin/dashboard";
         }
 
-        setSuccess("Login berhasil! Mengalihkan...");
+        showToast.success("Login berhasil! Mengalihkan...");
 
         // Trigger custom event untuk update Navigation component
         setTimeout(() => {
@@ -71,11 +68,11 @@ export default function LoginPage() {
           router.push(redirectUrl);
         }, 2000);
       } else {
-        setError(response.message || "Login gagal");
+        showToast.error(response.message || "Login gagal");
         setIsLoading(false);
       }
     } catch (err: any) {
-      setError(
+      showToast.error(
         err.message ||
           "Terjadi kesalahan saat login. Pastikan server backend sudah berjalan."
       );
@@ -113,22 +110,6 @@ export default function LoginPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5">
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-medium flex items-start gap-3">
-                <span className="text-lg mt-0.5">⚠️</span>
-                {error}
-              </div>
-            )}
-
-            {/* Success Message */}
-            {success && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm font-medium flex items-start gap-3">
-                <span className="text-lg mt-0.5">✓</span>
-                {success}
-              </div>
-            )}
-
             {/* Username Field */}
             <div>
               <label

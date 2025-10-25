@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { showToast } from "@/utils/toast";
 
 interface Lembaga {
   id: string;
@@ -12,7 +13,6 @@ interface Lembaga {
 export default function LembagaMasyarakatAdminPage() {
   const [lembaga, setLembaga] = useState<Lembaga[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchLembaga();
@@ -25,23 +25,30 @@ export default function LembagaMasyarakatAdminPage() {
       const data = await response.json();
       setLembaga(data);
     } catch (err) {
-      setError("Gagal memuat data lembaga");
+      showToast.error("Gagal memuat data lembaga");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Yakin ingin menghapus lembaga ini?")) return;
+    // Show confirmation toast dengan custom handling
+    const loadingToast = showToast.loading("Menghapus lembaga...");
 
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`/api/lembaga-masyarakat?id=${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
       if (!response.ok) throw new Error("Failed to delete");
       setLembaga(lembaga.filter((item) => item.id !== id));
+      showToast.update(loadingToast, "success", "Lembaga berhasil dihapus!");
     } catch (err) {
-      alert("Gagal menghapus lembaga");
+      showToast.update(loadingToast, "error", "Gagal menghapus lembaga");
     }
   };
 
@@ -60,12 +67,6 @@ export default function LembagaMasyarakatAdminPage() {
           + Tambah Lembaga
         </Link>
       </div>
-
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-gray-300">

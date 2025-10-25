@@ -10,6 +10,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
+import { showToast } from "@/utils/toast";
 
 interface BusinessUnit {
   id?: string;
@@ -24,18 +25,10 @@ interface BumdesData {
   businessUnits: BusinessUnit[];
 }
 
-interface NotificationState {
-  type: "success" | "error" | "info";
-  message: string;
-}
-
 export default function EditBumdesPage() {
   const [data, setData] = useState<BumdesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [notification, setNotification] = useState<NotificationState | null>(
-    null
-  );
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingFeatureIndex, setEditingFeatureIndex] = useState<number | null>(
     null
@@ -71,7 +64,7 @@ export default function EditBumdesPage() {
         const result = await response.json();
         setData(result);
       } catch (error) {
-        showNotification("error", "Gagal memuat data BUMDes");
+        showToast.error("Gagal memuat data BUMDes");
         console.error(error);
       } finally {
         setLoading(false);
@@ -80,14 +73,6 @@ export default function EditBumdesPage() {
 
     fetchData();
   }, []);
-
-  const showNotification = (
-    type: "success" | "error" | "info",
-    message: string
-  ) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 4000);
-  };
 
   const handleAddUnit = () => {
     if (data) {
@@ -159,14 +144,20 @@ export default function EditBumdesPage() {
   };
 
   const handleDeleteUnit = (index: number) => {
-    if (data && window.confirm("Apakah Anda yakin ingin menghapus unit ini?")) {
-      const updatedUnits = data.businessUnits.filter((_, i) => i !== index);
-      setData({
-        ...data,
-        businessUnits: updatedUnits,
-      });
-      showNotification("info", "Unit usaha dihapus");
-    }
+    showToast.confirm(
+      "Apakah Anda yakin ingin menghapus unit ini?",
+      () => {
+        if (data) {
+          const updatedUnits = data.businessUnits.filter((_, i) => i !== index);
+          setData({
+            ...data,
+            businessUnits: updatedUnits,
+          });
+          showToast.success("Unit usaha berhasil dihapus");
+        }
+      },
+      { title: "Konfirmasi Hapus", confirmText: "Hapus", cancelText: "Batal" }
+    );
   };
 
   const handleSave = async () => {
@@ -184,11 +175,11 @@ export default function EditBumdesPage() {
 
       if (!response.ok) throw new Error("Gagal menyimpan data");
 
-      showNotification("success", "Data BUMDes berhasil disimpan!");
+      showToast.success("Data BUMDes berhasil disimpan!");
       setEditingIndex(null);
       setEditingFeatureIndex(null);
     } catch (error) {
-      showNotification("error", "Gagal menyimpan data BUMDes");
+      showToast.error("Gagal menyimpan data BUMDes");
       console.error(error);
     } finally {
       setSaving(false);
@@ -226,26 +217,6 @@ export default function EditBumdesPage() {
               Kelola unit usaha desa (BUMDes) Timbukar
             </p>
           </div>
-
-          {/* Notification */}
-          {notification && (
-            <div
-              className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
-                notification.type === "success"
-                  ? "bg-green-100 text-green-800"
-                  : notification.type === "error"
-                  ? "bg-red-100 text-red-800"
-                  : "bg-blue-100 text-blue-800"
-              }`}
-            >
-              {notification.type === "success" ? (
-                <CheckCircle size={20} />
-              ) : (
-                <AlertCircle size={20} />
-              )}
-              <span>{notification.message}</span>
-            </div>
-          )}
 
           {/* Business Units */}
           <div className="space-y-6">
@@ -303,11 +274,7 @@ export default function EditBumdesPage() {
                       <textarea
                         value={unit.description}
                         onChange={(e) =>
-                          handleUpdateUnit(
-                            index,
-                            "description",
-                            e.target.value
-                          )
+                          handleUpdateUnit(index, "description", e.target.value)
                         }
                         rows={4}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"

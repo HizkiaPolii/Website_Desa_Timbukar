@@ -26,6 +26,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { showToast } from "@/utils/toast";
 
 interface StatisticsData {
   populasi: string;
@@ -225,9 +226,14 @@ export default function DataDesaAdminPage() {
   };
 
   const handleReset = () => {
-    if (confirm("Yakin ingin mereset data ke nilai awal?")) {
-      loadData();
-    }
+    showToast.confirm(
+      "Yakin ingin mereset data ke nilai awal?",
+      () => {
+        loadData();
+        showToast.success("Data berhasil direset!");
+      },
+      { title: "Konfirmasi Reset", confirmText: "Reset", cancelText: "Batal" }
+    );
   };
 
   // Helper function to convert data for charts

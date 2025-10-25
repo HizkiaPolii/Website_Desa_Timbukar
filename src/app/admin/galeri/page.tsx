@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Plus, Edit, Trash2, X, Upload } from "lucide-react";
+import { showToast } from "@/utils/toast";
 
 interface GaleriItem {
   id: number;
@@ -124,7 +125,7 @@ export default function AdminGaleriPage() {
       };
       reader.readAsDataURL(file);
     } else {
-      alert("Silakan pilih file gambar (JPG, PNG, GIF, WebP)");
+      showToast.error("Silakan pilih file gambar (JPG, PNG, GIF, WebP)");
     }
   };
 
@@ -210,7 +211,7 @@ export default function AdminGaleriPage() {
           item.id === editingId ? { ...item, ...formData } : item
         )
       );
-      alert("Galeri berhasil diperbarui!");
+      showToast.success("Galeri berhasil diperbarui!");
     } else {
       // Add new item
       const newItem: GaleriItem = {
@@ -218,17 +219,21 @@ export default function AdminGaleriPage() {
         ...formData,
       };
       setGaleriData([newItem, ...galeriData]);
-      alert("Galeri baru berhasil ditambahkan!");
+      showToast.success("Galeri baru berhasil ditambahkan!");
     }
 
     handleCloseModal();
   };
 
   const handleDeleteItem = (id: number) => {
-    if (confirm("Apakah Anda yakin ingin menghapus galeri ini?")) {
-      setGaleriData(galeriData.filter((item) => item.id !== id));
-      alert("Galeri berhasil dihapus!");
-    }
+    showToast.confirm(
+      "Apakah Anda yakin ingin menghapus galeri ini?",
+      () => {
+        setGaleriData(galeriData.filter((item) => item.id !== id));
+        showToast.success("Galeri berhasil dihapus!");
+      },
+      { title: "Konfirmasi Hapus", confirmText: "Hapus", cancelText: "Batal" }
+    );
   };
 
   const handleInputChange = (
@@ -452,9 +457,7 @@ export default function AdminGaleriPage() {
                     <Upload
                       size={40}
                       className={`${
-                        isDragging
-                          ? "text-emerald-600"
-                          : "text-gray-400"
+                        isDragging ? "text-emerald-600" : "text-gray-400"
                       }`}
                     />
                     <div>

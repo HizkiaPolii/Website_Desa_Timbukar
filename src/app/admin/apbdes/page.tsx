@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Edit, Trash2, X, Upload } from "lucide-react";
 import Image from "next/image";
+import { showToast } from "@/utils/toast";
 
 interface BudgetItem {
   id: number;
@@ -52,7 +53,11 @@ export default function AdminApbdesPage() {
         category: "Dana Transfer",
         items: [
           { id: 5, description: "Dana Alokasi Umum (DAU)", amount: 800000000 },
-          { id: 6, description: "Dana Alokasi Khusus (DAK)", amount: 300000000 },
+          {
+            id: 6,
+            description: "Dana Alokasi Khusus (DAK)",
+            amount: 300000000,
+          },
           { id: 7, description: "Dana Desa", amount: 1200000000 },
           {
             id: 8,
@@ -78,9 +83,21 @@ export default function AdminApbdesPage() {
         id: 1,
         category: "Belanja Aparatur Desa",
         items: [
-          { id: 1, description: "Gaji & Tunjangan Kepala Desa", amount: 120000000 },
-          { id: 2, description: "Gaji & Tunjangan Perangkat Desa", amount: 280000000 },
-          { id: 3, description: "Asuransi Kesehatan Aparatur", amount: 60000000 },
+          {
+            id: 1,
+            description: "Gaji & Tunjangan Kepala Desa",
+            amount: 120000000,
+          },
+          {
+            id: 2,
+            description: "Gaji & Tunjangan Perangkat Desa",
+            amount: 280000000,
+          },
+          {
+            id: 3,
+            description: "Asuransi Kesehatan Aparatur",
+            amount: 60000000,
+          },
           { id: 4, description: "Pelatihan Aparatur Desa", amount: 50000000 },
         ],
         total: 510000000,
@@ -89,10 +106,18 @@ export default function AdminApbdesPage() {
         id: 2,
         category: "Belanja Pelayanan Publik",
         items: [
-          { id: 5, description: "Pendidikan & Pelatihan Masyarakat", amount: 200000000 },
+          {
+            id: 5,
+            description: "Pendidikan & Pelatihan Masyarakat",
+            amount: 200000000,
+          },
           { id: 6, description: "Kesehatan Masyarakat", amount: 250000000 },
           { id: 7, description: "Puskesmas/Polindes", amount: 150000000 },
-          { id: 8, description: "Program Kesejahteraan Sosial", amount: 300000000 },
+          {
+            id: 8,
+            description: "Program Kesejahteraan Sosial",
+            amount: 300000000,
+          },
         ],
         total: 900000000,
       },
@@ -102,9 +127,21 @@ export default function AdminApbdesPage() {
         items: [
           { id: 9, description: "Pembangunan Jalan Desa", amount: 500000000 },
           { id: 10, description: "Pembangunan Irigasi", amount: 300000000 },
-          { id: 11, description: "Pembangunan Gedung Pertemuan", amount: 250000000 },
-          { id: 12, description: "Pembangunan Sanitasi & Air Bersih", amount: 200000000 },
-          { id: 13, description: "Pembangunan Listrik Desa", amount: 150000000 },
+          {
+            id: 11,
+            description: "Pembangunan Gedung Pertemuan",
+            amount: 250000000,
+          },
+          {
+            id: 12,
+            description: "Pembangunan Sanitasi & Air Bersih",
+            amount: 200000000,
+          },
+          {
+            id: 13,
+            description: "Pembangunan Listrik Desa",
+            amount: 150000000,
+          },
         ],
         total: 1400000000,
       },
@@ -112,10 +149,18 @@ export default function AdminApbdesPage() {
         id: 4,
         category: "Belanja Pemberdayaan Masyarakat",
         items: [
-          { id: 14, description: "Program Pemberdayaan Ekonomi", amount: 150000000 },
+          {
+            id: 14,
+            description: "Program Pemberdayaan Ekonomi",
+            amount: 150000000,
+          },
           { id: 15, description: "Pelatihan Keterampilan", amount: 120000000 },
           { id: 16, description: "Dukungan UMKM", amount: 180000000 },
-          { id: 17, description: "Program Pertanian Modern", amount: 140000000 },
+          {
+            id: 17,
+            description: "Program Pertanian Modern",
+            amount: 140000000,
+          },
         ],
         total: 590000000,
       },
@@ -135,7 +180,11 @@ export default function AdminApbdesPage() {
         category: "Belanja Lain-lain",
         items: [
           { id: 22, description: "Cadangan Umum", amount: 150000000 },
-          { id: 23, description: "Koreksi Kesalahan Tahun Sebelumnya", amount: 25000000 },
+          {
+            id: 23,
+            description: "Koreksi Kesalahan Tahun Sebelumnya",
+            amount: 25000000,
+          },
         ],
         total: 175000000,
       },
@@ -184,7 +233,7 @@ export default function AdminApbdesPage() {
       };
       reader.readAsDataURL(file);
     } else {
-      alert("Silakan pilih file gambar (JPG, PNG, GIF, WebP)");
+      showToast.error("Silakan pilih file gambar (JPG, PNG, GIF, WebP)");
     }
   };
 
@@ -246,7 +295,10 @@ export default function AdminApbdesPage() {
     setIsModalOpen(true);
   };
 
-  const handleAddItem = (type: "pendapatan" | "belanja", categoryId: number) => {
+  const handleAddItem = (
+    type: "pendapatan" | "belanja",
+    categoryId: number
+  ) => {
     setEditingData({
       type,
       categoryId,
@@ -332,51 +384,69 @@ export default function AdminApbdesPage() {
     categoryId: number,
     itemId: number
   ) => {
-    if (confirm("Apakah Anda yakin ingin menghapus item ini?")) {
-      if (type === "pendapatan") {
-        setApbdesData((prev) => ({
-          ...prev,
-          pendapatan: prev.pendapatan.map((cat) => {
-            if (cat.id === categoryId) {
-              const updatedItems = cat.items.filter((item) => item.id !== itemId);
-              return {
-                ...cat,
-                items: updatedItems,
-                total: updatedItems.reduce((sum, item) => sum + item.amount, 0),
-              };
-            }
-            return cat;
-          }),
-        }));
-      } else {
-        setApbdesData((prev) => ({
-          ...prev,
-          belanja: prev.belanja.map((cat) => {
-            if (cat.id === categoryId) {
-              const updatedItems = cat.items.filter((item) => item.id !== itemId);
-              return {
-                ...cat,
-                items: updatedItems,
-                total: updatedItems.reduce((sum, item) => sum + item.amount, 0),
-              };
-            }
-            return cat;
-          }),
-        }));
-      }
-    }
+    showToast.confirm(
+      "Apakah Anda yakin ingin menghapus item ini?",
+      () => {
+        if (type === "pendapatan") {
+          setApbdesData((prev) => ({
+            ...prev,
+            pendapatan: prev.pendapatan.map((cat) => {
+              if (cat.id === categoryId) {
+                const updatedItems = cat.items.filter(
+                  (item) => item.id !== itemId
+                );
+                return {
+                  ...cat,
+                  items: updatedItems,
+                  total: updatedItems.reduce(
+                    (sum, item) => sum + item.amount,
+                    0
+                  ),
+                };
+              }
+              return cat;
+            }),
+          }));
+        } else {
+          setApbdesData((prev) => ({
+            ...prev,
+            belanja: prev.belanja.map((cat) => {
+              if (cat.id === categoryId) {
+                const updatedItems = cat.items.filter(
+                  (item) => item.id !== itemId
+                );
+                return {
+                  ...cat,
+                  items: updatedItems,
+                  total: updatedItems.reduce(
+                    (sum, item) => sum + item.amount,
+                    0
+                  ),
+                };
+              }
+              return cat;
+            }),
+          }));
+        }
+        showToast.success("Item berhasil dihapus!");
+      },
+      { title: "Konfirmasi Hapus", confirmText: "Hapus", cancelText: "Batal" }
+    );
   };
 
   const totalPendapatan = apbdesData.pendapatan.reduce(
     (sum, cat) => sum + cat.total,
     0
   );
-  const totalBelanja = apbdesData.belanja.reduce((sum, cat) => sum + cat.total, 0);
+  const totalBelanja = apbdesData.belanja.reduce(
+    (sum, cat) => sum + cat.total,
+    0
+  );
   const surplus = totalPendapatan - totalBelanja;
 
   const handleSave = () => {
     // TODO: Simpan ke database
-    alert("Data APBDES berhasil disimpan!");
+    showToast.success("Data APBDES berhasil disimpan!");
   };
 
   return (
@@ -395,7 +465,9 @@ export default function AdminApbdesPage() {
         {/* Tahun Anggaran */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <div className="flex items-center gap-4">
-            <label className="text-gray-700 font-semibold">Tahun Anggaran:</label>
+            <label className="text-gray-700 font-semibold">
+              Tahun Anggaran:
+            </label>
             <input
               type="number"
               value={apbdesData.tahunAnggaran}
@@ -437,7 +509,9 @@ export default function AdminApbdesPage() {
 
         {/* PENDAPATAN Section */}
         <section className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">📈 PENDAPATAN</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            📈 PENDAPATAN
+          </h2>
           <div className="space-y-4">
             {apbdesData.pendapatan.map((category) => (
               <div
@@ -480,7 +554,11 @@ export default function AdminApbdesPage() {
                             <td className="py-3 text-center flex justify-center gap-2">
                               <button
                                 onClick={() =>
-                                  handleEditItem("pendapatan", category.id, item)
+                                  handleEditItem(
+                                    "pendapatan",
+                                    category.id,
+                                    item
+                                  )
                                 }
                                 className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition"
                               >
@@ -488,7 +566,11 @@ export default function AdminApbdesPage() {
                               </button>
                               <button
                                 onClick={() =>
-                                  handleDeleteItem("pendapatan", category.id, item.id)
+                                  handleDeleteItem(
+                                    "pendapatan",
+                                    category.id,
+                                    item.id
+                                  )
                                 }
                                 className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
                               >
@@ -582,7 +664,11 @@ export default function AdminApbdesPage() {
                               </button>
                               <button
                                 onClick={() =>
-                                  handleDeleteItem("belanja", category.id, item.id)
+                                  handleDeleteItem(
+                                    "belanja",
+                                    category.id,
+                                    item.id
+                                  )
                                 }
                                 className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
                               >
@@ -625,7 +711,9 @@ export default function AdminApbdesPage() {
 
         {/* Foto APBDES Section */}
         <section className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">📸 FOTO APBDES</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            📸 FOTO APBDES
+          </h2>
           <div className="bg-white rounded-lg shadow-md p-6">
             <p className="text-gray-600 mb-4">
               Unggah foto APBDES yang dicetak sebagai baliho atau bukti kegiatan

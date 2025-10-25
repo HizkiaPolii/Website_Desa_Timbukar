@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Mail, Phone, MapPin, Clock, Send } from "lucide-react";
 import Link from "next/link";
+import { toast } from "react-toastify";
 import MapComponent from "@/components/MapComponent";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -35,7 +36,7 @@ export default function KontakDesa() {
     setIsSubmitting(true);
     // Simulasi submit
     setTimeout(() => {
-      alert("Terima kasih! Pesan Anda telah terkirim.");
+      toast.success("Terima kasih! Pesan Anda telah terkirim.");
       setFormData({
         nama: "",
         email: "",
@@ -110,7 +111,11 @@ export default function KontakDesa() {
               {infoKontak.map((info, index) => {
                 const Icon = info.icon;
                 return (
-                  <Card key={index} hover className="border-l-4 border-emerald-600 bg-gradient-to-br from-emerald-50 to-blue-50">
+                  <Card
+                    key={index}
+                    hover
+                    className="border-l-4 border-emerald-600 bg-gradient-to-br from-emerald-50 to-blue-50"
+                  >
                     <div className="flex items-start gap-4">
                       <Icon
                         className="text-emerald-600 flex-shrink-0 mt-1"
@@ -163,9 +168,7 @@ export default function KontakDesa() {
 
           {/* Form Kontak */}
           <section>
-            <h2 className="title-section text-emerald-600 mb-8">
-              Kirim Pesan
-            </h2>
+            <h2 className="title-section text-emerald-600 mb-8">Kirim Pesan</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Nama */}
               <div>
@@ -309,7 +312,6 @@ export default function KontakDesa() {
           </div>
         </section>
       </main>
-
     </div>
   );
 }

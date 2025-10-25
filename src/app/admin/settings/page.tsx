@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getAdminUser } from "@/utils/auth";
 import { Save, AlertCircle } from "lucide-react";
+import { showToast } from "@/utils/toast";
 
 interface AdminUser {
   email: string;
@@ -22,7 +23,6 @@ export default function AdminSettings() {
     maintenanceMode: false,
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     setIsClient(true);
@@ -50,7 +50,6 @@ export default function AdminSettings() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    setSuccess("");
 
     try {
       // Simulasi penyimpanan
@@ -59,10 +58,10 @@ export default function AdminSettings() {
       // Simpan ke localStorage
       localStorage.setItem("siteSettings", JSON.stringify(formData));
 
-      setSuccess("Pengaturan berhasil disimpan!");
-      setTimeout(() => setSuccess(""), 3000);
+      showToast.success("Pengaturan berhasil disimpan!");
     } catch (err) {
       console.error("Error saving settings:", err);
+      showToast.error("Gagal menyimpan pengaturan");
     } finally {
       setIsSaving(false);
     }
@@ -84,13 +83,6 @@ export default function AdminSettings() {
 
       {/* Settings Form */}
       <div className="max-w-2xl bg-white rounded-lg shadow-md p-6 md:p-8">
-        {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm font-medium flex items-start gap-3">
-            <span className="text-lg mt-0.5">✓</span>
-            {success}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Informasi Admin */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">

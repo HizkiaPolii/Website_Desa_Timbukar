@@ -102,9 +102,11 @@ export default function TambahLembagaPage() {
     setSuccess("");
 
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch("/api/lembaga-masyarakat", {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),

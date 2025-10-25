@@ -88,6 +88,11 @@ export default function Navigation({ currentPage = "home" }: NavProps) {
     setIsMenuOpen(false);
     // Trigger custom event untuk update Navigation component
     window.dispatchEvent(new Event("user-changed"));
+
+    // Refresh page setelah logout
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 300);
   };
 
   const isCurrentPage = (page: string) => currentPage === page;

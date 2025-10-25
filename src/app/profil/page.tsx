@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Target } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
+import { getProfilDesa } from "@/services/profilDesaService";
 
 interface Misi {
   no: string;
@@ -12,10 +13,12 @@ interface Misi {
 }
 
 interface ProfileData {
+  id?: number;
   visi: string;
   misi: Misi[];
-  tujuan: string[];
+  tujuan?: string[];
   sejarah: string;
+  updated_at?: string;
 }
 
 export default function ProfilDesa() {
@@ -25,10 +28,19 @@ export default function ProfilDesa() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/profil");
-        if (!response.ok) throw new Error("Gagal mengambil data");
-        const data = await response.json();
-        setVisiMisi(data);
+        const result = await getProfilDesa();
+        if (result.success && result.data) {
+          setVisiMisi(result.data);
+        } else {
+          console.error("Error fetching profile data:", result.error);
+          // Fallback ke data default jika gagal
+          setVisiMisi({
+            visi: "Desa Timbukar yang maju, mandiri, dan berkelanjutan dengan pemberdayaan masyarakat dan pelestarian lingkungan.",
+            misi: [],
+            tujuan: [],
+            sejarah: "",
+          });
+        }
       } catch (error) {
         console.error("Error fetching profile data:", error);
         // Fallback ke data default jika gagal
@@ -120,23 +132,6 @@ export default function ProfilDesa() {
               </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Tujuan & Target */}
-      <section className="mb-16 sm:mb-20">
-        <h2 className="section-title">Target & Tujuan Pembangunan</h2>
-        <div className="section-box-purple">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            {visiMisi.tujuan.map((target, index) => (
-              <div key={index} className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-purple-600 mt-1"></div>
-                <p className="text-gray-700 font-medium text-sm sm:text-base leading-relaxed">
-                  {target}
-                </p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
