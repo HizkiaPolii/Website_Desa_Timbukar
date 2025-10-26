@@ -2,46 +2,57 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
-interface Lembaga {
-  nama: string;
-  pengertian: string;
-  fungsi: string[];
-  tugas: string[];
-  wewenang: string[];
-  susunanKeanggotaan: string;
-  masaJabatan: string;
-  prinsipKerja: {
-    musyawarah: string;
-    transparan: string;
-    akuntabel: string;
-    demokratis: string;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+const getAuthToken = () => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("token");
+  }
+  return null;
+};
+
+const getHeaders = () => {
+  const token = getAuthToken();
+  return {
+    "Content-Type": "application/json",
+    ...(token && { Authorization: `Bearer ${token}` }),
   };
+};
+
+async function createLembagaMasyarakat(payload: any) {
+  try {
+    const response = await fetch(`${API_URL}/lembaga-masyarakat`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to create lembaga masyarakat");
+    }
+
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error("Error creating lembaga masyarakat:", error);
+    throw error;
+  }
 }
 
 export default function TambahLembagaPage() {
   const router = useRouter();
-
-  const [formData, setFormData] = useState<Lembaga>({
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
     nama: "",
-    pengertian: "",
-    fungsi: [""],
-    tugas: [""],
-    wewenang: [""],
-    susunanKeanggotaan: "",
-    masaJabatan: "",
-    prinsipKerja: {
-      musyawarah: "",
-      transparan: "",
-      akuntabel: "",
-      demokratis: "",
-    },
+    deskripsi: "",
+    ketua: "",
+    noTelepon: "",
+    alamat: "",
+    gambar: "",
   });
-
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -53,357 +64,150 @@ export default function TambahLembagaPage() {
     }));
   };
 
-  const handlePrinsipChange = (key: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      prinsipKerja: {
-        ...prev.prinsipKerja,
-        [key]: value,
-      },
-    }));
-  };
-
-  const handleArrayChange = (
-    field: "fungsi" | "tugas" | "wewenang",
-    index: number,
-    value: string
-  ) => {
-    setFormData((prev) => {
-      const newArray = [...prev[field]];
-      newArray[index] = value;
-      return {
-        ...prev,
-        [field]: newArray,
-      };
-    });
-  };
-
-  const addArrayItem = (field: "fungsi" | "tugas" | "wewenang") => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: [...prev[field], ""],
-    }));
-  };
-
-  const removeArrayItem = (
-    field: "fungsi" | "tugas" | "wewenang",
-    index: number
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: prev[field].filter((_, i) => i !== index),
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    setError("");
-    setSuccess("");
+
+    if (!formData.nama.trim()) {
+      setError("Nama lembaga tidak boleh kosong");
+      return;
+    }
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/lembaga-masyarakat", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+      setSubmitting(true);
+      setError(null);
+
+      await createLembagaMasyarakat({
+        nama: formData.nama,
+        deskripsi: formData.deskripsi || undefined,
+        ketua: formData.ketua || undefined,
+        noTelepon: formData.noTelepon || undefined,
+        alamat: formData.alamat || undefined,
+        gambar: formData.gambar || undefined,
       });
 
-      if (!response.ok) throw new Error("Failed to create");
-
-      setSuccess("Lembaga baru berhasil ditambahkan!");
-      setTimeout(() => {
-        router.push("/admin/lembaga-masyarakat");
-      }, 1500);
+      router.push("/admin/lembaga-masyarakat");
     } catch (err) {
-      setError("Gagal menambahkan lembaga baru");
+      setError(err instanceof Error ? err.message : "Gagal membuat data");
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-4 mb-6">
-        <Link
-          href="/admin/lembaga-masyarakat"
-          className="text-blue-600 hover:text-blue-800"
-        >
-          ← Kembali
-        </Link>
-        <h1 className="text-2xl font-bold text-gray-800">
-          Tambah Lembaga Masyarakat Baru
-        </h1>
-      </div>
+    <div className="p-6 max-w-2xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Tambah Lembaga Masyarakat</h1>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
           {error}
         </div>
       )}
 
-      {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {success}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="bg-white rounded shadow-lg p-6">
-        {/* Nama Lembaga */}
-        <div className="mb-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Nama Lembaga <span className="text-red-500">*</span>
+            Nama Lembaga *
           </label>
           <input
-            type="text"
+            id="nama"
             name="nama"
             value={formData.nama}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            placeholder="Masukkan nama lembaga"
             required
-            placeholder="Contoh: BPD (Badan Permusyawaratan Desa)"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           />
         </div>
 
-        {/* Pengertian */}
-        <div className="mb-6">
+        <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Pengertian <span className="text-red-500">*</span>
+            Deskripsi
           </label>
           <textarea
-            name="pengertian"
-            value={formData.pengertian}
+            id="deskripsi"
+            name="deskripsi"
+            value={formData.deskripsi}
             onChange={handleInputChange}
+            placeholder="Deskripsi lembaga"
             rows={4}
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-            required
-            placeholder="Jelaskan pengertian lembaga ini..."
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           />
         </div>
 
-        {/* Fungsi */}
-        <div className="mb-6">
+        <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Fungsi
+            Nama Ketua
           </label>
-          <div className="space-y-2">
-            {formData.fungsi.map((item, index) => (
-              <div key={index} className="flex gap-2">
-                <input
-                  type="text"
-                  value={item}
-                  onChange={(e) =>
-                    handleArrayChange("fungsi", index, e.target.value)
-                  }
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                  placeholder={`Fungsi ${index + 1}`}
-                />
-                {formData.fungsi.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeArrayItem("fungsi", index)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded"
-                  >
-                    Hapus
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => addArrayItem("fungsi")}
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm"
-            >
-              + Tambah Fungsi
-            </button>
-          </div>
+          <input
+            id="ketua"
+            name="ketua"
+            value={formData.ketua}
+            onChange={handleInputChange}
+            placeholder="Nama ketua lembaga"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+          />
         </div>
 
-        {/* Tugas */}
-        <div className="mb-6">
+        <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Tugas
+            No. Telepon
           </label>
-          <div className="space-y-2">
-            {formData.tugas.map((item, index) => (
-              <div key={index} className="flex gap-2">
-                <input
-                  type="text"
-                  value={item}
-                  onChange={(e) =>
-                    handleArrayChange("tugas", index, e.target.value)
-                  }
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                  placeholder={`Tugas ${index + 1}`}
-                />
-                {formData.tugas.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeArrayItem("tugas", index)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded"
-                  >
-                    Hapus
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => addArrayItem("tugas")}
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm"
-            >
-              + Tambah Tugas
-            </button>
-          </div>
+          <input
+            id="noTelepon"
+            name="noTelepon"
+            value={formData.noTelepon}
+            onChange={handleInputChange}
+            placeholder="Nomor telepon"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+          />
         </div>
 
-        {/* Wewenang */}
-        <div className="mb-6">
+        <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Wewenang
-          </label>
-          <div className="space-y-2">
-            {formData.wewenang.map((item, index) => (
-              <div key={index} className="flex gap-2">
-                <input
-                  type="text"
-                  value={item}
-                  onChange={(e) =>
-                    handleArrayChange("wewenang", index, e.target.value)
-                  }
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                  placeholder={`Wewenang ${index + 1}`}
-                />
-                {formData.wewenang.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeArrayItem("wewenang", index)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded"
-                  >
-                    Hapus
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => addArrayItem("wewenang")}
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm"
-            >
-              + Tambah Wewenang
-            </button>
-          </div>
-        </div>
-
-        {/* Susunan Keanggotaan */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Susunan Keanggotaan
+            Alamat
           </label>
           <textarea
-            name="susunanKeanggotaan"
-            value={formData.susunanKeanggotaan}
+            id="alamat"
+            name="alamat"
+            value={formData.alamat}
             onChange={handleInputChange}
+            placeholder="Alamat lembaga"
             rows={3}
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-            placeholder="Jelaskan susunan keanggotaan..."
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           />
         </div>
 
-        {/* Masa Jabatan */}
-        <div className="mb-6">
+        <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Masa Jabatan
+            URL Gambar
           </label>
-          <textarea
-            name="masaJabatan"
-            value={formData.masaJabatan}
+          <input
+            id="gambar"
+            name="gambar"
+            type="url"
+            value={formData.gambar}
             onChange={handleInputChange}
-            rows={3}
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-            placeholder="Jelaskan masa jabatan..."
+            placeholder="URL gambar lembaga"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           />
         </div>
 
-        {/* Prinsip Kerja */}
-        <div className="mb-6 p-4 bg-gray-50 rounded">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">
-            Prinsip Kerja
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
-                Musyawarah
-              </label>
-              <textarea
-                value={formData.prinsipKerja.musyawarah}
-                onChange={(e) =>
-                  handlePrinsipChange("musyawarah", e.target.value)
-                }
-                rows={2}
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
-                Transparan
-              </label>
-              <textarea
-                value={formData.prinsipKerja.transparan}
-                onChange={(e) =>
-                  handlePrinsipChange("transparan", e.target.value)
-                }
-                rows={2}
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
-                Akuntabel
-              </label>
-              <textarea
-                value={formData.prinsipKerja.akuntabel}
-                onChange={(e) =>
-                  handlePrinsipChange("akuntabel", e.target.value)
-                }
-                rows={2}
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
-                Demokratis
-              </label>
-              <textarea
-                value={formData.prinsipKerja.demokratis}
-                onChange={(e) =>
-                  handlePrinsipChange("demokratis", e.target.value)
-                }
-                rows={2}
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex gap-4">
+        <div className="flex gap-4 mt-6">
           <button
             type="submit"
-            disabled={saving}
+            disabled={submitting}
             className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded font-semibold"
           >
-            {saving ? "Menyimpan..." : "Simpan Lembaga Baru"}
+            {submitting ? "Menyimpan..." : "Simpan Lembaga"}
           </button>
-          <Link
-            href="/admin/lembaga-masyarakat"
-            className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded font-semibold"
+          <button
+            type="button"
+            onClick={() => router.back()}
+            disabled={submitting}
+            className="bg-gray-400 hover:bg-gray-500 disabled:bg-gray-300 text-white px-6 py-2 rounded font-semibold"
           >
             Batal
-          </Link>
+          </button>
         </div>
       </form>
     </div>
