@@ -40,7 +40,7 @@ export interface RegisterPayload {
  */
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("authToken");
+  return localStorage.getItem("token");
 }
 
 /**
@@ -48,7 +48,7 @@ export function getToken(): string | null {
  */
 export function setToken(token: string): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem("authToken", token);
+  localStorage.setItem("token", token);
 }
 
 /**
@@ -56,7 +56,7 @@ export function setToken(token: string): void {
  */
 export function removeToken(): void {
   if (typeof window === "undefined") return;
-  localStorage.removeItem("authToken");
+  localStorage.removeItem("token");
   localStorage.removeItem("user");
 }
 

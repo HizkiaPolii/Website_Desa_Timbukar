@@ -32,7 +32,6 @@ export function useIdleLogout({
     try {
       // Clear localStorage
       localStorage.removeItem("token");
-      localStorage.removeItem("authToken");
       localStorage.removeItem("user");
 
       // Dispatch event untuk sinkronisasi antar tab
@@ -56,7 +55,8 @@ export function useIdleLogout({
   // Fungsi untuk reset timer ketika ada aktivitas
   const resetIdleTimer = useCallback(() => {
     // Hanya reset jika user sudah login
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
     if (!token) return;
 
     // Clear timer yang sebelumnya
@@ -71,7 +71,9 @@ export function useIdleLogout({
       if (!warningShownRef.current) {
         warningShownRef.current = true;
         console.warn("Session akan berakhir dalam 2 menit karena inaktivitas");
-        toast.warning("Sesi Anda akan berakhir dalam 2 menit karena inaktivitas");
+        toast.warning(
+          "Sesi Anda akan berakhir dalam 2 menit karena inaktivitas"
+        );
         onWarning?.();
       }
     }, warningTime);

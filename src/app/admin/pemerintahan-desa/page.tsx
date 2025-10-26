@@ -8,34 +8,13 @@ import {
   Edit2,
   CheckCircle,
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
-
-interface Posisi {
-  nama: string;
-  jabatan: string;
-  foto: string;
-  kontak: string;
-  tugas: string;
-}
-
-interface Level {
-  level: string;
-  posisi: Posisi[];
-}
-
-interface Bidang {
-  nama: string;
-  deskripsi: string;
-  icon: string;
-}
-
-interface PemerintahanData {
-  struktur: Level[];
-  bidang: Bidang[];
-}
+import ImageUploadField from "@/components/ImageUploadField";
+import {
+  pemerintahanDesaService,
+  type Pegawai,
+} from "@/services/pemerintahanDesaService";
 
 interface NotificationState {
   type: "success" | "error" | "info";
@@ -43,39 +22,55 @@ interface NotificationState {
 }
 
 export default function EditPemerintahanDesaPage() {
-  const [data, setData] = useState<PemerintahanData | null>(null);
+  const [pegawaiList, setPegawaiList] = useState<Pegawai[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notification, setNotification] = useState<NotificationState | null>(
     null
   );
-  const [expandedLevels, setExpandedLevels] = useState<Set<number>>(
-    new Set([0, 1, 2])
-  );
-  const [editingPosisi, setEditingPosisi] = useState<{
-    levelIdx: number;
-    posIdx: number;
-  } | null>(null);
-  const [editingBidang, setEditingBidang] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [formData, setFormData] = useState<Partial<Pegawai>>({
+    nama: "",
+    jabatan: "",
+    nip: "",
+    noTelepon: "",
+    alamat: "",
+    foto: "",
+    kategori: "perangkat_desa",
+  });
 
-  // Load data
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("/api/pemerintahan");
-        if (!response.ok) throw new Error("Gagal mengambil data");
-        const result = await response.json();
-        setData(result);
-      } catch (error) {
-        showNotification("error", "Gagal memuat data pemerintahan desa");
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    fetchPegawai();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Check if token exists, redirect if not
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/login";
+      }
+    }
+  }, []);
+
+  const fetchPegawai = async () => {
+    try {
+      setLoading(true);
+      const data = await pemerintahanDesaService.getAllPemerintahan();
+      setPegawaiList(data);
+    } catch (error) {
+      showNotification(
+        "error",
+        "Gagal memuat data. Pastikan backend server running di http://localhost:5000"
+      );
+      console.error("Fetch error:", error);
+      setPegawaiList([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const showNotification = (
     type: "success" | "error" | "info",
@@ -85,145 +80,160 @@ export default function EditPemerintahanDesaPage() {
     setTimeout(() => setNotification(null), 4000);
   };
 
-  const toggleLevel = (idx: number) => {
-    const newExpanded = new Set(expandedLevels);
-    if (newExpanded.has(idx)) {
-      newExpanded.delete(idx);
-    } else {
-      newExpanded.add(idx);
-    }
-    setExpandedLevels(newExpanded);
+  const handleInputChange = (field: keyof Pegawai, value: string | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
-  // Struktur handlers
-  const handleLevelNameChange = (levelIdx: number, value: string) => {
-    if (data) {
-      const newStruktur = [...data.struktur];
-      newStruktur[levelIdx].level = value;
-      setData({ ...data, struktur: newStruktur });
-    }
+  const resetForm = () => {
+    setFormData({
+      nama: "",
+      jabatan: "",
+      nip: "",
+      noTelepon: "",
+      alamat: "",
+      foto: "",
+      kategori: "perangkat_desa",
+    });
+    setEditingId(null);
+    setIsAddingNew(false);
   };
 
-  const handlePosisiChange = (
-    levelIdx: number,
-    posIdx: number,
-    field: keyof Posisi,
-    value: string
-  ) => {
-    if (data) {
-      const newStruktur = [...data.struktur];
-      newStruktur[levelIdx].posisi[posIdx] = {
-        ...newStruktur[levelIdx].posisi[posIdx],
-        [field]: value,
-      };
-      setData({ ...data, struktur: newStruktur });
-    }
+  const startEditing = (pegawai: Pegawai) => {
+    setFormData({
+      id: pegawai.id,
+      nama: pegawai.nama,
+      jabatan: pegawai.jabatan,
+      nip: pegawai.nip,
+      noTelepon: pegawai.noTelepon,
+      alamat: pegawai.alamat,
+      foto: pegawai.foto,
+      kategori: pegawai.kategori || "perangkat_desa",
+    });
+    setEditingId(pegawai.id);
   };
 
-  const handleAddPosisi = (levelIdx: number) => {
-    if (data) {
-      const newStruktur = [...data.struktur];
-      newStruktur[levelIdx].posisi.push({
-        nama: "[Nama]",
-        jabatan: "[Jabatan Baru]",
-        foto: "/images/placeholder.svg",
-        kontak: "-",
-        tugas: "",
-      });
-      setData({ ...data, struktur: newStruktur });
-      setEditingPosisi({
-        levelIdx,
-        posIdx: newStruktur[levelIdx].posisi.length - 1,
-      });
-    }
+  const startAddNew = () => {
+    resetForm();
+    setIsAddingNew(true);
   };
 
-  const handleDeletePosisi = (levelIdx: number, posIdx: number) => {
-    if (data) {
-      const newStruktur = [...data.struktur];
-      newStruktur[levelIdx].posisi = newStruktur[levelIdx].posisi.filter(
-        (_, i) => i !== posIdx
-      );
-      setData({ ...data, struktur: newStruktur });
-      setEditingPosisi(null);
+  const validateForm = (): boolean => {
+    if (!formData.nama?.trim()) {
+      showNotification("error", "Nama harus diisi");
+      return false;
     }
-  };
-
-  const handleAddLevel = () => {
-    if (data) {
-      const newLevel: Level = {
-        level: "Struktur Baru",
-        posisi: [],
-      };
-      const newStruktur = [...data.struktur, newLevel];
-      setData({ ...data, struktur: newStruktur });
-      setExpandedLevels(new Set(expandedLevels).add(newStruktur.length - 1));
+    if (!formData.jabatan?.trim()) {
+      showNotification("error", "Jabatan harus diisi");
+      return false;
     }
-  };
-
-  const handleDeleteLevel = (levelIdx: number) => {
-    if (data) {
-      const newStruktur = data.struktur.filter((_, i) => i !== levelIdx);
-      setData({ ...data, struktur: newStruktur });
-      const newExpanded = new Set(expandedLevels);
-      newExpanded.delete(levelIdx);
-      setExpandedLevels(newExpanded);
+    if (!formData.nip?.trim()) {
+      showNotification("error", "NIP harus diisi");
+      return false;
     }
-  };
-
-  // Bidang handlers
-  const handleBidangChange = (
-    bidangIdx: number,
-    field: keyof Bidang,
-    value: string
-  ) => {
-    if (data) {
-      const newBidang = [...data.bidang];
-      newBidang[bidangIdx] = { ...newBidang[bidangIdx], [field]: value };
-      setData({ ...data, bidang: newBidang });
+    if (!formData.noTelepon?.trim()) {
+      showNotification("error", "Nomor telepon harus diisi");
+      return false;
     }
-  };
-
-  const handleAddBidang = () => {
-    if (data) {
-      const newBidang: Bidang = {
-        nama: "Bidang Baru",
-        deskripsi: "Deskripsi bidang...",
-        icon: "📋",
-      };
-      setData({ ...data, bidang: [...data.bidang, newBidang] });
-      setEditingBidang(data.bidang.length);
+    if (!formData.alamat?.trim()) {
+      showNotification("error", "Alamat harus diisi");
+      return false;
     }
-  };
-
-  const handleDeleteBidang = (bidangIdx: number) => {
-    if (data) {
-      const newBidang = data.bidang.filter((_, i) => i !== bidangIdx);
-      setData({ ...data, bidang: newBidang });
-      setEditingBidang(null);
-    }
+    return true;
   };
 
   const handleSave = async () => {
-    if (!data) return;
+    if (!validateForm()) return;
 
     setSaving(true);
     try {
-      const response = await fetch("/api/pemerintahan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      if (editingId) {
+        console.log("Updating pegawai:", { editingId, formData });
+        await pemerintahanDesaService.updatePemerintahan(editingId, {
+          nama: formData.nama!,
+          jabatan: formData.jabatan!,
+          nip: formData.nip!,
+          noTelepon: formData.noTelepon!,
+          alamat: formData.alamat!,
+          foto: formData.foto || null,
+          kategori: (formData.kategori || "perangkat_desa") as
+            | "pemimpin_desa"
+            | "perangkat_desa"
+            | "perangkat_penunjang",
+        });
+        showNotification("success", "Data pemerintahan berhasil diperbarui!");
+      } else {
+        console.log("Creating pegawai:", { formData });
+        await pemerintahanDesaService.createPemerintahan({
+          nama: formData.nama!,
+          jabatan: formData.jabatan!,
+          nip: formData.nip!,
+          noTelepon: formData.noTelepon!,
+          alamat: formData.alamat!,
+          foto: formData.foto || null,
+          kategori: (formData.kategori || "perangkat_desa") as
+            | "pemimpin_desa"
+            | "perangkat_desa"
+            | "perangkat_penunjang",
+        });
+        showNotification("success", "Data pemerintahan berhasil ditambahkan!");
+      }
+      resetForm();
+      await fetchPegawai();
+    } catch (error: any) {
+      const errorMessage = error?.message || "Gagal menyimpan data";
+      console.error("Save error:", error);
 
-      if (!response.ok) throw new Error("Gagal menyimpan data");
-
-      showNotification("success", "Data pemerintahan desa berhasil disimpan!");
-    } catch (error) {
-      showNotification("error", "Gagal menyimpan data pemerintahan desa");
-      console.error(error);
+      // Jika error karena sesi expired (401)
+      if (
+        error?.message?.includes("berakhir") ||
+        error?.message?.includes("401")
+      ) {
+        showNotification(
+          "error",
+          "Sesi Anda telah berakhir. Silakan login kembali."
+        );
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 2000);
+      } else {
+        showNotification("error", errorMessage);
+      }
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus data ini?")) return;
+
+    try {
+      await pemerintahanDesaService.deletePemerintahan(id);
+      showNotification("success", "Data pemerintahan berhasil dihapus!");
+      await fetchPegawai();
+    } catch (error: any) {
+      const errorMessage = error?.message || "Gagal menghapus data";
+
+      // Jika error karena sesi expired
+      if (errorMessage?.includes("berakhir") || errorMessage?.includes("401")) {
+        showNotification(
+          "error",
+          "Sesi Anda telah berakhir. Silakan login kembali."
+        );
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 2000);
+      } else {
+        showNotification("error", errorMessage);
+      }
+      console.error(error);
+    }
+  };
+
+  const handleCancel = () => {
+    resetForm();
   };
 
   if (loading) {
@@ -242,49 +252,32 @@ export default function EditPemerintahanDesaPage() {
     );
   }
 
-  if (!data) {
-    return (
-      <div className="flex">
-        <AdminSidebar />
-        <main className="flex-1 md:ml-64 bg-gray-50 min-h-screen p-4 md:p-8">
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center text-red-600">
-              <AlertCircle size={48} className="mx-auto mb-4" />
-              <p>Gagal memuat data pemerintahan desa</p>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="flex">
       <AdminSidebar />
       <main className="flex-1 md:ml-64 bg-gray-50 min-h-screen">
-        {/* Header */}
         <div className="bg-white border-b border-gray-200 p-4 md:p-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                Edit Pemerintahan Desa
+                Kelola Pemerintahan Desa
               </h1>
               <p className="text-gray-600 mt-1">
-                Kelola struktur organisasi dan bidang-bidang pemerintahan
+                Tambah, edit, atau hapus data pegawai pemerintahan desa
               </p>
             </div>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-            >
-              <Save size={18} />
-              {saving ? "Menyimpan..." : "Simpan Perubahan"}
-            </button>
+            {!isAddingNew && !editingId && (
+              <button
+                onClick={startAddNew}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+              >
+                <Plus size={18} />
+                Tambah Pegawai
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Notification */}
         {notification && (
           <div
             className={`mx-4 mt-4 md:mx-8 md:mt-8 p-4 rounded-lg flex items-start gap-3 ${
@@ -306,342 +299,236 @@ export default function EditPemerintahanDesaPage() {
           </div>
         )}
 
-        {/* Content */}
         <div className="p-4 md:p-8 space-y-8">
-          {/* Struktur Organisasi */}
-          <div className="bg-white rounded-lg shadow p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Struktur Organisasi
+          {(isAddingNew || editingId) && (
+            <div className="bg-white rounded-lg shadow p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                {editingId ? "Edit Pegawai" : "Tambah Pegawai Baru"}
               </h2>
-              <button
-                onClick={handleAddLevel}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-              >
-                <Plus size={18} />
-                Tambah Level
-              </button>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nama <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.nama || ""}
+                      onChange={(e) =>
+                        handleInputChange("nama", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                      placeholder="Masukkan nama lengkap"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Jabatan <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.jabatan || ""}
+                      onChange={(e) =>
+                        handleInputChange("jabatan", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                      placeholder="Contoh: Kepala Desa"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      NIP <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.nip || ""}
+                      onChange={(e) => handleInputChange("nip", e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                      placeholder="15-20 digit"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Kategori <span className="text-red-600">*</span>
+                    </label>
+                    <select
+                      value={formData.kategori || "perangkat_desa"}
+                      onChange={(e) =>
+                        handleInputChange("kategori", e.target.value as any)
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    >
+                      <option value="pemimpin_desa">
+                        Pemimpin Desa (Kepala Desa)
+                      </option>
+                      <option value="perangkat_desa">Perangkat Desa</option>
+                      <option value="perangkat_penunjang">
+                        Perangkat Penunjang
+                      </option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nomor Telepon <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.noTelepon || ""}
+                      onChange={(e) =>
+                        handleInputChange("noTelepon", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                      placeholder="081234567890"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Alamat <span className="text-red-600">*</span>
+                  </label>
+                  <textarea
+                    value={formData.alamat || ""}
+                    onChange={(e) =>
+                      handleInputChange("alamat", e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 resize-none"
+                    rows={3}
+                    placeholder="Masukkan alamat lengkap"
+                  />
+                </div>
+
+                <div>
+                  <ImageUploadField
+                    value={formData.foto}
+                    onChange={(value) => handleInputChange("foto", value)}
+                    label="Foto (Opsional)"
+                    placeholder="Drag and drop foto atau klik untuk pilih"
+                  />
+                </div>
+
+                <div className="flex gap-4 justify-end pt-4">
+                  <button
+                    onClick={handleCancel}
+                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
+                  >
+                    <Save size={18} />
+                    {saving ? "Menyimpan..." : "Simpan"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="p-6 md:p-8 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Daftar Pegawai ({pegawaiList.length})
+              </h2>
             </div>
 
-            <div className="space-y-4">
-              {data.struktur.map((level, levelIdx) => (
-                <div
-                  key={levelIdx}
-                  className="border border-gray-200 rounded-lg"
-                >
-                  {/* Level Header */}
-                  <button
-                    onClick={() => toggleLevel(levelIdx)}
-                    className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3 flex-1">
-                      {expandedLevels.has(levelIdx) ? (
-                        <ChevronUp size={20} className="text-emerald-600" />
-                      ) : (
-                        <ChevronDown size={20} className="text-gray-400" />
-                      )}
-                      <input
-                        type="text"
-                        value={level.level}
-                        onChange={(e) =>
-                          handleLevelNameChange(levelIdx, e.target.value)
-                        }
-                        onClick={(e) => e.stopPropagation()}
-                        className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-600 font-semibold text-gray-900"
-                      />
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteLevel(levelIdx);
-                      }}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </button>
-
-                  {/* Level Content */}
-                  {expandedLevels.has(levelIdx) && (
-                    <div className="border-t border-gray-200 p-4 bg-gray-50 space-y-4">
-                      {level.posisi.map((posisi, posIdx) => (
-                        <div
-                          key={posIdx}
-                          className="bg-white border border-gray-200 rounded-lg p-4"
-                        >
-                          <div className="flex items-start justify-between mb-4">
+            {pegawaiList.length === 0 ? (
+              <div className="p-6 md:p-8 text-center text-gray-500">
+                <p>
+                  Belum ada data pegawai. Tambahkan data baru untuk memulai.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        Nama
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        Jabatan
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        Kategori
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        NIP
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        Telepon
+                      </th>
+                      <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">
+                        Aksi
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pegawaiList.map((pegawai, idx) => (
+                      <tr
+                        key={pegawai.id}
+                        className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                      >
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          {pegawai.nama}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {pegawai.jabatan}
+                        </td>
+                        <td className="px-6 py-4 text-sm">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              pegawai.kategori === "pemimpin_desa"
+                                ? "bg-amber-100 text-amber-800"
+                                : pegawai.kategori === "perangkat_desa"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-green-100 text-green-800"
+                            }`}
+                          >
+                            {pegawai.kategori === "pemimpin_desa"
+                              ? "Pemimpin Desa"
+                              : pegawai.kategori === "perangkat_desa"
+                              ? "Perangkat Desa"
+                              : "Perangkat Penunjang"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {pegawai.nip}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {pegawai.noTelepon}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex justify-center gap-2">
                             <button
-                              onClick={() =>
-                                setEditingPosisi(
-                                  editingPosisi?.levelIdx === levelIdx &&
-                                    editingPosisi?.posIdx === posIdx
-                                    ? null
-                                    : { levelIdx, posIdx }
-                                )
-                              }
-                              className="text-gray-600 hover:text-emerald-600 transition-colors"
+                              onClick={() => startEditing(pegawai)}
+                              disabled={editingId !== null || isAddingNew}
+                              className="text-blue-600 hover:text-blue-700 disabled:text-gray-400 p-2"
                             >
                               <Edit2 size={18} />
                             </button>
                             <button
-                              onClick={() =>
-                                handleDeletePosisi(levelIdx, posIdx)
-                              }
-                              className="text-red-600 hover:text-red-700 transition-colors"
+                              onClick={() => handleDelete(pegawai.id)}
+                              disabled={editingId !== null || isAddingNew}
+                              className="text-red-600 hover:text-red-700 disabled:text-gray-400 p-2"
                             >
                               <Trash2 size={18} />
                             </button>
                           </div>
-
-                          {editingPosisi?.levelIdx === levelIdx &&
-                          editingPosisi?.posIdx === posIdx ? (
-                            <div className="space-y-3">
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Nama
-                                </label>
-                                <input
-                                  type="text"
-                                  value={posisi.nama}
-                                  onChange={(e) =>
-                                    handlePosisiChange(
-                                      levelIdx,
-                                      posIdx,
-                                      "nama",
-                                      e.target.value
-                                    )
-                                  }
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Jabatan
-                                </label>
-                                <input
-                                  type="text"
-                                  value={posisi.jabatan}
-                                  onChange={(e) =>
-                                    handlePosisiChange(
-                                      levelIdx,
-                                      posIdx,
-                                      "jabatan",
-                                      e.target.value
-                                    )
-                                  }
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Foto (URL)
-                                </label>
-                                <input
-                                  type="text"
-                                  value={posisi.foto}
-                                  onChange={(e) =>
-                                    handlePosisiChange(
-                                      levelIdx,
-                                      posIdx,
-                                      "foto",
-                                      e.target.value
-                                    )
-                                  }
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 text-sm"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Kontak
-                                </label>
-                                <input
-                                  type="text"
-                                  value={posisi.kontak}
-                                  onChange={(e) =>
-                                    handlePosisiChange(
-                                      levelIdx,
-                                      posIdx,
-                                      "kontak",
-                                      e.target.value
-                                    )
-                                  }
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Tugas (Opsional)
-                                </label>
-                                <textarea
-                                  value={posisi.tugas}
-                                  onChange={(e) =>
-                                    handlePosisiChange(
-                                      levelIdx,
-                                      posIdx,
-                                      "tugas",
-                                      e.target.value
-                                    )
-                                  }
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 resize-none"
-                                  rows={2}
-                                />
-                              </div>
-                            </div>
-                          ) : (
-                            <div>
-                              <h4 className="font-semibold text-gray-900 mb-1">
-                                {posisi.nama}
-                              </h4>
-                              <p className="text-sm badge-primary mb-2">
-                                {posisi.jabatan}
-                              </p>
-                              {posisi.tugas && (
-                                <p className="text-sm text-gray-600 mb-2">
-                                  {posisi.tugas}
-                                </p>
-                              )}
-                              {posisi.kontak !== "-" && (
-                                <p className="text-sm text-gray-700">
-                                  📞 {posisi.kontak}
-                                </p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-
-                      <button
-                        onClick={() => handleAddPosisi(levelIdx)}
-                        className="w-full py-2 border-2 border-dashed border-emerald-300 rounded-lg text-emerald-600 font-medium hover:bg-emerald-50 transition-colors"
-                      >
-                        <Plus size={18} className="inline mr-2" />
-                        Tambah Posisi
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Bidang-Bidang */}
-          <div className="bg-white rounded-lg shadow p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Bidang-Bidang Pemerintahan
-              </h2>
-              <button
-                onClick={handleAddBidang}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-              >
-                <Plus size={18} />
-                Tambah Bidang
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {data.bidang.map((bidang, idx) => (
-                <div
-                  key={idx}
-                  className="border border-gray-200 rounded-lg p-4 hover:border-emerald-300 transition-colors"
-                >
-                  {editingBidang === idx ? (
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Icon (Emoji)
-                        </label>
-                        <input
-                          type="text"
-                          value={bidang.icon}
-                          onChange={(e) =>
-                            handleBidangChange(idx, "icon", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
-                          maxLength={2}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Nama Bidang
-                        </label>
-                        <input
-                          type="text"
-                          value={bidang.nama}
-                          onChange={(e) =>
-                            handleBidangChange(idx, "nama", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Deskripsi
-                        </label>
-                        <textarea
-                          value={bidang.deskripsi}
-                          onChange={(e) =>
-                            handleBidangChange(idx, "deskripsi", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 resize-none"
-                          rows={3}
-                        />
-                      </div>
-                      <div className="flex gap-2 justify-end">
-                        <button
-                          onClick={() => setEditingBidang(null)}
-                          className="px-3 py-1 text-gray-600 hover:text-gray-900"
-                        >
-                          Batal
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="text-3xl">{bidang.icon}</div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => setEditingBidang(idx)}
-                            className="text-gray-600 hover:text-emerald-600"
-                          >
-                            <Edit2 size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteBidang(idx)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </div>
-                      <h3 className="font-semibold text-gray-900 mb-2">
-                        {bidang.nama}
-                      </h3>
-                      <p className="text-sm text-gray-700">
-                        {bidang.deskripsi}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Save Button */}
-          <div className="flex justify-end gap-4">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
-            >
-              <Save size={20} />
-              {saving ? "Menyimpan..." : "Simpan Semua Perubahan"}
-            </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </main>

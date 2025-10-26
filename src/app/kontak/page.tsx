@@ -10,6 +10,8 @@ import Footer from "@/components/Footer";
 import Card from "@/components/Card";
 import "leaflet/dist/leaflet.css";
 
+export const dynamic = "force-dynamic";
+
 export default function KontakDesa() {
   const [formData, setFormData] = useState({
     nama: "",
