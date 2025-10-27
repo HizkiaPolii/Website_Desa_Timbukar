@@ -20,35 +20,45 @@ interface StatistikItem {
   color: "blue" | "green" | "red" | "purple" | "pink" | "yellow";
 }
 
+interface StatisticsData {
+  populasi: string;
+  kepala_keluarga: string;
+  luas_wilayah: string;
+  angka_pertumbuhan: string;
+  jumlah_bayi: string;
+  angka_harapan_hidup: string;
+}
+
+interface DemographicsItem {
+  kategori_usia: string;
+  persentase: string;
+  jumlah: string;
+}
+
+interface GenderItem {
+  jenis_kelamin: string;
+  jumlah: string;
+  persentase: string;
+}
+
+interface EducationItem {
+  tingkat_pendidikan: string;
+  jumlah: string;
+  persentase: string;
+}
+
+interface ReligionItem {
+  agama: string;
+  jumlah: string;
+  persentase: string;
+}
+
 interface DataDesa {
-  statistics: {
-    populasi: string;
-    kepalakeluarga: string;
-    luasWilayah: string;
-    angkaPertumbuhan: string;
-    jumlahBayi: string;
-    angkaHarapanHidup: string;
-  };
-  demographics: Array<{
-    kategori: string;
-    persentase: string;
-    jumlah: string;
-  }>;
-  gender: Array<{
-    jenis: string;
-    jumlah: string;
-    persentase: string;
-  }>;
-  education: Array<{
-    tingkat: string;
-    jumlah: string;
-    persentase: string;
-  }>;
-  religion: Array<{
-    agama: string;
-    jumlah: string;
-    persentase: string;
-  }>;
+  statistics: StatisticsData;
+  demographics: DemographicsItem[];
+  gender: GenderItem[];
+  education: EducationItem[];
+  religion: ReligionItem[];
 }
 
 export default function DataDesaPage() {
@@ -61,10 +71,23 @@ export default function DataDesaPage() {
 
   const loadData = async () => {
     try {
-      const response = await fetch("/api/data-desa");
+      const API_BASE_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const response = await fetch(`${API_BASE_URL}/data-desa`);
       if (!response.ok) throw new Error("Failed to fetch");
-      const data = await response.json();
-      setDataDesa(data);
+      const result = await response.json();
+
+      // Backend sudah transform data sesuai format frontend
+      // Gunakan data langsung dari API
+      const mappedData: DataDesa = {
+        statistics: result.data.statistics,
+        demographics: result.data.demographics,
+        gender: result.data.gender,
+        education: result.data.education,
+        religion: result.data.religion,
+      };
+
+      setDataDesa(mappedData);
     } catch (err) {
       console.error("Error loading data:", err);
       // Gunakan data default jika API gagal
@@ -78,29 +101,29 @@ export default function DataDesaPage() {
   const defaultData: DataDesa = {
     statistics: {
       populasi: "2,500",
-      kepalakeluarga: "625",
-      luasWilayah: "45.5 km²",
-      angkaPertumbuhan: "2.5%",
-      jumlahBayi: "180",
-      angkaHarapanHidup: "72 Tahun",
+      kepala_keluarga: "625",
+      luas_wilayah: "45.5 km²",
+      angka_pertumbuhan: "2.5%",
+      jumlah_bayi: "180",
+      angka_harapan_hidup: "72 Tahun",
     },
     demographics: [
-      { kategori: "Usia 0-5 Tahun", persentase: "8%", jumlah: "200" },
-      { kategori: "Usia 5-15 Tahun", persentase: "15%", jumlah: "375" },
-      { kategori: "Usia 15-65 Tahun", persentase: "68%", jumlah: "1,700" },
-      { kategori: "Usia 65+ Tahun", persentase: "9%", jumlah: "225" },
+      { kategori_usia: "Usia 0-5 Tahun", persentase: "8%", jumlah: "200" },
+      { kategori_usia: "Usia 5-15 Tahun", persentase: "15%", jumlah: "375" },
+      { kategori_usia: "Usia 15-65 Tahun", persentase: "68%", jumlah: "1,700" },
+      { kategori_usia: "Usia 65+ Tahun", persentase: "9%", jumlah: "225" },
     ],
     gender: [
-      { jenis: "Laki-laki", jumlah: "1,275", persentase: "51%" },
-      { jenis: "Perempuan", jumlah: "1,225", persentase: "49%" },
+      { jenis_kelamin: "Laki-laki", jumlah: "1,275", persentase: "51%" },
+      { jenis_kelamin: "Perempuan", jumlah: "1,225", persentase: "49%" },
     ],
     education: [
-      { tingkat: "Tidak Sekolah", jumlah: "125", persentase: "5%" },
-      { tingkat: "SD/Sederajat", jumlah: "625", persentase: "25%" },
-      { tingkat: "SMP/Sederajat", jumlah: "750", persentase: "30%" },
-      { tingkat: "SMA/Sederajat", jumlah: "700", persentase: "28%" },
-      { tingkat: "D1/D2/D3", jumlah: "150", persentase: "6%" },
-      { tingkat: "S1/S2/S3", jumlah: "175", persentase: "7%" },
+      { tingkat_pendidikan: "Tidak Sekolah", jumlah: "125", persentase: "5%" },
+      { tingkat_pendidikan: "SD/Sederajat", jumlah: "625", persentase: "25%" },
+      { tingkat_pendidikan: "SMP/Sederajat", jumlah: "750", persentase: "30%" },
+      { tingkat_pendidikan: "SMA/Sederajat", jumlah: "700", persentase: "28%" },
+      { tingkat_pendidikan: "D1/D2/D3", jumlah: "150", persentase: "6%" },
+      { tingkat_pendidikan: "S1/S2/S3", jumlah: "175", persentase: "7%" },
     ],
     religion: [
       { agama: "Islam", jumlah: "2,000", persentase: "80%" },
@@ -166,31 +189,31 @@ export default function DataDesaPage() {
     },
     {
       label: "Kepala Keluarga",
-      value: formatNumber(dataDesa.statistics.kepalakeluarga),
+      value: formatNumber(dataDesa.statistics.kepala_keluarga),
       icon: <Home size={32} />,
       color: "green",
     },
     {
       label: "Luas Wilayah",
-      value: dataDesa.statistics.luasWilayah,
+      value: dataDesa.statistics.luas_wilayah,
       icon: <MapPin size={32} />,
       color: "red",
     },
     {
       label: "Angka Pertumbuhan",
-      value: dataDesa.statistics.angkaPertumbuhan,
+      value: dataDesa.statistics.angka_pertumbuhan,
       icon: <TrendingUp size={32} />,
       color: "purple",
     },
     {
       label: "Jumlah Bayi",
-      value: formatNumber(dataDesa.statistics.jumlahBayi),
+      value: formatNumber(dataDesa.statistics.jumlah_bayi),
       icon: <Baby size={32} />,
       color: "pink",
     },
     {
       label: "Angka Harapan Hidup",
-      value: dataDesa.statistics.angkaHarapanHidup,
+      value: dataDesa.statistics.angka_harapan_hidup,
       icon: <Heart size={32} />,
       color: "red",
     },
@@ -230,7 +253,7 @@ export default function DataDesaPage() {
               <div key={index}>
                 <div className="flex justify-between items-center mb-2 sm:mb-3">
                   <span className="font-medium text-gray-700 text-sm sm:text-base">
-                    {item.jenis}
+                    {item.jenis_kelamin}
                   </span>
                   <div className="text-right">
                     <p className="font-bold text-gray-900 text-sm sm:text-base">
@@ -244,7 +267,9 @@ export default function DataDesaPage() {
                 <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${
-                      item.jenis === "Laki-laki" ? "bg-blue-500" : "bg-pink-500"
+                      item.jenis_kelamin === "Laki-laki"
+                        ? "bg-blue-500"
+                        : "bg-pink-500"
                     }`}
                     style={{
                       width: item.persentase,
@@ -266,7 +291,7 @@ export default function DataDesaPage() {
               <div key={index}>
                 <div className="flex justify-between items-center mb-2 sm:mb-3">
                   <span className="font-medium text-gray-700 text-sm sm:text-base">
-                    {item.kategori}
+                    {item.kategori_usia}
                   </span>
                   <div className="text-right">
                     <p className="font-bold text-gray-900 text-sm sm:text-base">
@@ -322,7 +347,7 @@ export default function DataDesaPage() {
                   }`}
                 >
                   <td className="py-3 px-3 sm:px-4 text-gray-700">
-                    {item.tingkat}
+                    {item.tingkat_pendidikan}
                   </td>
                   <td className="py-3 px-3 sm:px-4 text-center font-semibold text-gray-900">
                     {formatNumber(item.jumlah)}

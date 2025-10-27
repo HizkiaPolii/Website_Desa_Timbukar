@@ -13,6 +13,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import Link from "next/link";
 import {
   BarChart,
   Bar,
@@ -30,27 +31,27 @@ import { showToast } from "@/utils/toast";
 
 interface StatisticsData {
   populasi: string;
-  kepalakeluarga: string;
-  luasWilayah: string;
-  angkaPertumbuhan: string;
-  jumlahBayi: string;
-  angkaHarapanHidup: string;
+  kepala_keluarga: string;
+  luas_wilayah: string;
+  angka_pertumbuhan: string;
+  jumlah_bayi: string;
+  angka_harapan_hidup: string;
 }
 
 interface DemographicsItem {
-  kategori: string;
+  kategori_usia: string;
   persentase: string;
   jumlah: string;
 }
 
 interface GenderItem {
-  jenis: string;
+  jenis_kelamin: string;
   jumlah: string;
   persentase: string;
 }
 
 interface EducationItem {
-  tingkat: string;
+  tingkat_pendidikan: string;
   jumlah: string;
   persentase: string;
 }
@@ -73,29 +74,29 @@ export default function DataDesaAdminPage() {
   const [formData, setFormData] = useState<DataDesaFormData>({
     statistics: {
       populasi: "2,500",
-      kepalakeluarga: "625",
-      luasWilayah: "45.5 km²",
-      angkaPertumbuhan: "2.5%",
-      jumlahBayi: "180",
-      angkaHarapanHidup: "72 Tahun",
+      kepala_keluarga: "625",
+      luas_wilayah: "45.5 km²",
+      angka_pertumbuhan: "2.5%",
+      jumlah_bayi: "180",
+      angka_harapan_hidup: "72 Tahun",
     },
     demographics: [
-      { kategori: "Usia 0-5 Tahun", persentase: "8%", jumlah: "200" },
-      { kategori: "Usia 5-15 Tahun", persentase: "15%", jumlah: "375" },
-      { kategori: "Usia 15-65 Tahun", persentase: "68%", jumlah: "1,700" },
-      { kategori: "Usia 65+ Tahun", persentase: "9%", jumlah: "225" },
+      { kategori_usia: "Usia 0-5 Tahun", persentase: "8%", jumlah: "200" },
+      { kategori_usia: "Usia 5-15 Tahun", persentase: "15%", jumlah: "375" },
+      { kategori_usia: "Usia 15-65 Tahun", persentase: "68%", jumlah: "1,700" },
+      { kategori_usia: "Usia 65+ Tahun", persentase: "9%", jumlah: "225" },
     ],
     gender: [
-      { jenis: "Laki-laki", jumlah: "1,275", persentase: "51%" },
-      { jenis: "Perempuan", jumlah: "1,225", persentase: "49%" },
+      { jenis_kelamin: "Laki-laki", jumlah: "1,275", persentase: "51%" },
+      { jenis_kelamin: "Perempuan", jumlah: "1,225", persentase: "49%" },
     ],
     education: [
-      { tingkat: "Tidak Sekolah", jumlah: "125", persentase: "5%" },
-      { tingkat: "SD/Sederajat", jumlah: "625", persentase: "25%" },
-      { tingkat: "SMP/Sederajat", jumlah: "750", persentase: "30%" },
-      { tingkat: "SMA/Sederajat", jumlah: "700", persentase: "28%" },
-      { tingkat: "D1/D2/D3", jumlah: "150", persentase: "6%" },
-      { tingkat: "S1/S2/S3", jumlah: "175", persentase: "7%" },
+      { tingkat_pendidikan: "Tidak Sekolah", jumlah: "125", persentase: "5%" },
+      { tingkat_pendidikan: "SD/Sederajat", jumlah: "625", persentase: "25%" },
+      { tingkat_pendidikan: "SMP/Sederajat", jumlah: "750", persentase: "30%" },
+      { tingkat_pendidikan: "SMA/Sederajat", jumlah: "700", persentase: "28%" },
+      { tingkat_pendidikan: "D1/D2/D3", jumlah: "150", persentase: "6%" },
+      { tingkat_pendidikan: "S1/S2/S3", jumlah: "175", persentase: "7%" },
     ],
     religion: [
       { agama: "Islam", jumlah: "2,000", persentase: "80%" },
@@ -120,10 +121,23 @@ export default function DataDesaAdminPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/data-desa");
+      const API_BASE_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const response = await fetch(`${API_BASE_URL}/data-desa`);
       if (!response.ok) throw new Error("Failed to fetch");
-      const data = await response.json();
-      setFormData(data);
+      const result = await response.json();
+
+      // Backend sudah transform data sesuai format frontend
+      // Gunakan data langsung dari API seperti di homepage
+      const mappedData: DataDesaFormData = {
+        statistics: result.data.statistics,
+        demographics: result.data.demographics,
+        gender: result.data.gender,
+        education: result.data.education,
+        religion: result.data.religion,
+      };
+
+      setFormData(mappedData);
     } catch (err) {
       console.error("Error loading data:", err);
       setError("Gagal memuat data. Menggunakan data default.");
@@ -204,22 +218,115 @@ export default function DataDesaAdminPage() {
       setError("");
       setSuccess("");
 
-      // Simpan data via API
-      const response = await fetch("/api/data-desa", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+      const API_BASE_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+      // Simpan setiap kategori dengan individual POST calls
+      // Format: POST /data-desa dengan { kategori: "...", ...data }
+
+      const savePromises = [];
+
+      // Save Statistics (single record)
+      savePromises.push(
+        fetch(`${API_BASE_URL}/data-desa`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            kategori: "statistics",
+            populasi: formData.statistics.populasi,
+            kepala_keluarga: formData.statistics.kepala_keluarga,
+            luas_wilayah: formData.statistics.luas_wilayah,
+            angka_pertumbuhan: formData.statistics.angka_pertumbuhan,
+            jumlah_bayi: formData.statistics.jumlah_bayi,
+            angka_harapan_hidup: formData.statistics.angka_harapan_hidup,
+          }),
+        })
+      );
+
+      // Save Demographics
+      formData.demographics.forEach((item) => {
+        savePromises.push(
+          fetch(`${API_BASE_URL}/data-desa`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              kategori: "demographics",
+              kategori_usia: item.kategori_usia,
+              jumlah: parseInt(item.jumlah.replace(/\D/g, "")) || 0,
+              persentase: item.persentase,
+            }),
+          })
+        );
       });
 
-      if (!response.ok) throw new Error("Failed to save");
+      // Save Gender
+      formData.gender.forEach((item) => {
+        savePromises.push(
+          fetch(`${API_BASE_URL}/data-desa`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              kategori: "gender",
+              jenis_kelamin: item.jenis_kelamin,
+              jumlah: parseInt(item.jumlah.replace(/\D/g, "")) || 0,
+              persentase: item.persentase,
+            }),
+          })
+        );
+      });
+
+      // Save Education
+      formData.education.forEach((item) => {
+        savePromises.push(
+          fetch(`${API_BASE_URL}/data-desa`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              kategori: "education",
+              tingkat_pendidikan: item.tingkat_pendidikan,
+              jumlah: parseInt(item.jumlah.replace(/\D/g, "")) || 0,
+              persentase: item.persentase,
+            }),
+          })
+        );
+      });
+
+      // Save Religion
+      formData.religion.forEach((item) => {
+        savePromises.push(
+          fetch(`${API_BASE_URL}/data-desa`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              kategori: "religion",
+              agama: item.agama,
+              jumlah: parseInt(item.jumlah.replace(/\D/g, "")) || 0,
+              persentase: item.persentase,
+            }),
+          })
+        );
+      });
+
+      // Wait semua requests
+      const responses = await Promise.all(savePromises);
+
+      // Check if any failed
+      const failedResponses = responses.filter((r) => !r.ok);
+      if (failedResponses.length > 0) {
+        throw new Error(
+          `${failedResponses.length} data gagal disimpan. Status: ${failedResponses[0].status}`
+        );
+      }
 
       setSuccess("Data berhasil disimpan");
+      showToast.success("Data desa berhasil diperbarui!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       console.error("Error saving data:", err);
-      setError("Gagal menyimpan data");
+      setError(err instanceof Error ? err.message : "Gagal menyimpan data");
+      showToast.error(
+        err instanceof Error ? err.message : "Gagal menyimpan data"
+      );
     } finally {
       setSaving(false);
     }
@@ -308,276 +415,197 @@ export default function DataDesaAdminPage() {
 
       {/* Statistics Section */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Statistik Utama
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Object.entries(formData.statistics).map(([key, value]) => {
-            const labels: Record<string, string> = {
-              populasi: "Jumlah Penduduk",
-              kepalakeluarga: "Kepala Keluarga",
-              luasWilayah: "Luas Wilayah",
-              angkaPertumbuhan: "Angka Pertumbuhan",
-              jumlahBayi: "Jumlah Bayi",
-              angkaHarapanHidup: "Angka Harapan Hidup",
-            };
-
-            return (
-              <div key={key}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {labels[key]}
-                </label>
-                <input
-                  type="text"
-                  value={value}
-                  onChange={(e) =>
-                    handleStatisticsChange(
-                      key as keyof StatisticsData,
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                />
-              </div>
-            );
-          })}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Statistik Utama</h2>
+          <Link
+            href="/admin/data-desa/edit-statistik-utama"
+            className="text-sm px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Edit Statistik Utama
+          </Link>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b-2 border-gray-200">
+                <th className="text-left py-3 px-4">Nama Statistik</th>
+                <th className="text-left py-3 px-4">Nilai</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-gray-100">
+                <td className="py-3 px-4">Jumlah Penduduk</td>
+                <td className="py-3 px-4">{formData.statistics.populasi}</td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-3 px-4">Kepala Keluarga</td>
+                <td className="py-3 px-4">
+                  {formData.statistics.kepala_keluarga}
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-3 px-4">Luas Wilayah</td>
+                <td className="py-3 px-4">
+                  {formData.statistics.luas_wilayah}
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-3 px-4">Angka Pertumbuhan</td>
+                <td className="py-3 px-4">
+                  {formData.statistics.angka_pertumbuhan}
+                </td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-3 px-4">Jumlah Bayi</td>
+                <td className="py-3 px-4">{formData.statistics.jumlah_bayi}</td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-3 px-4">Angka Harapan Hidup</td>
+                <td className="py-3 px-4">
+                  {formData.statistics.angka_harapan_hidup}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Demographics Distribution */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Distribusi Usia (Demografi)
-        </h2>
-        <div className="space-y-6">
-          {formData.demographics.map((item, index) => (
-            <div key={index} className="p-4 border border-gray-200 rounded-lg">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Kategori Usia
-                  </label>
-                  <input
-                    type="text"
-                    value={item.kategori}
-                    onChange={(e) =>
-                      handleDemographicsChange(
-                        index,
-                        "kategori",
-                        e.target.value
-                      )
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Jumlah
-                  </label>
-                  <input
-                    type="text"
-                    value={item.jumlah}
-                    onChange={(e) =>
-                      handleDemographicsChange(index, "jumlah", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Persentase
-                  </label>
-                  <input
-                    type="text"
-                    value={item.persentase}
-                    onChange={(e) =>
-                      handleDemographicsChange(
-                        index,
-                        "persentase",
-                        e.target.value
-                      )
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Distribusi Usia (Demografi)
+          </h2>
+          <Link
+            href="/admin/data-desa/edit-distribusi-usia"
+            className="text-sm px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Edit Distribusi Usia
+          </Link>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b-2 border-gray-200">
+                <th className="text-left py-3 px-4">Kategori Usia</th>
+                <th className="text-left py-3 px-4">Jumlah</th>
+                <th className="text-left py-3 px-4">Persentase</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formData.demographics.map((item, index) => (
+                <tr key={index} className="border-b border-gray-100">
+                  <td className="py-3 px-4">{item.kategori_usia}</td>
+                  <td className="py-3 px-4">{item.jumlah}</td>
+                  <td className="py-3 px-4">{item.persentase}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Gender Distribution */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Distribusi Jenis Kelamin
-        </h2>
-        <div className="space-y-6">
-          {formData.gender.map((item, index) => (
-            <div key={index} className="p-4 border border-gray-200 rounded-lg">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Jenis Kelamin
-                  </label>
-                  <input
-                    type="text"
-                    value={item.jenis}
-                    onChange={(e) =>
-                      handleGenderChange(index, "jenis", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Jumlah
-                  </label>
-                  <input
-                    type="text"
-                    value={item.jumlah}
-                    onChange={(e) =>
-                      handleGenderChange(index, "jumlah", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Persentase
-                  </label>
-                  <input
-                    type="text"
-                    value={item.persentase}
-                    onChange={(e) =>
-                      handleGenderChange(index, "persentase", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Distribusi Jenis Kelamin
+          </h2>
+          <Link
+            href="/admin/data-desa/edit-jenis-kelamin"
+            className="text-sm px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Edit Jenis Kelamin
+          </Link>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b-2 border-gray-200">
+                <th className="text-left py-3 px-4">Jenis Kelamin</th>
+                <th className="text-left py-3 px-4">Jumlah</th>
+                <th className="text-left py-3 px-4">Persentase</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formData.gender.map((item, index) => (
+                <tr key={index} className="border-b border-gray-100">
+                  <td className="py-3 px-4">{item.jenis_kelamin}</td>
+                  <td className="py-3 px-4">{item.jumlah}</td>
+                  <td className="py-3 px-4">{item.persentase}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Education Distribution */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Distribusi Pendidikan
-        </h2>
-        <div className="space-y-6">
-          {formData.education.map((item, index) => (
-            <div key={index} className="p-4 border border-gray-200 rounded-lg">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tingkat Pendidikan
-                  </label>
-                  <input
-                    type="text"
-                    value={item.tingkat}
-                    onChange={(e) =>
-                      handleEducationChange(index, "tingkat", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Jumlah
-                  </label>
-                  <input
-                    type="text"
-                    value={item.jumlah}
-                    onChange={(e) =>
-                      handleEducationChange(index, "jumlah", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Persentase
-                  </label>
-                  <input
-                    type="text"
-                    value={item.persentase}
-                    onChange={(e) =>
-                      handleEducationChange(index, "persentase", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Distribusi Pendidikan
+          </h2>
+          <Link
+            href="/admin/data-desa/edit-pendidikan"
+            className="text-sm px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Edit Pendidikan
+          </Link>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b-2 border-gray-200">
+                <th className="text-left py-3 px-4">Tingkat Pendidikan</th>
+                <th className="text-left py-3 px-4">Jumlah</th>
+                <th className="text-left py-3 px-4">Persentase</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formData.education.map((item, index) => (
+                <tr key={index} className="border-b border-gray-100">
+                  <td className="py-3 px-4">{item.tingkat_pendidikan}</td>
+                  <td className="py-3 px-4">{item.jumlah}</td>
+                  <td className="py-3 px-4">{item.persentase}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Religion Distribution */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Distribusi Agama
-        </h2>
-        <div className="space-y-6">
-          {formData.religion.map((item, index) => (
-            <div key={index} className="p-4 border border-gray-200 rounded-lg">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Agama
-                  </label>
-                  <input
-                    type="text"
-                    value={item.agama}
-                    onChange={(e) =>
-                      handleReligionChange(index, "agama", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Jumlah
-                  </label>
-                  <input
-                    type="text"
-                    value={item.jumlah}
-                    onChange={(e) =>
-                      handleReligionChange(index, "jumlah", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Persentase
-                  </label>
-                  <input
-                    type="text"
-                    value={item.persentase}
-                    onChange={(e) =>
-                      handleReligionChange(index, "persentase", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Distribusi Agama</h2>
+          <Link
+            href="/admin/data-desa/edit-agama"
+            className="text-sm px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Edit Agama
+          </Link>
         </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex gap-4 mb-8 sticky top-0 bg-white p-6 rounded-lg shadow-md z-10">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Save size={20} />
-          {saving ? "Menyimpan..." : "Simpan Data"}
-        </button>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b-2 border-gray-200">
+                <th className="text-left py-3 px-4">Agama</th>
+                <th className="text-left py-3 px-4">Jumlah</th>
+                <th className="text-left py-3 px-4">Persentase</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formData.religion.map((item, index) => (
+                <tr key={index} className="border-b border-gray-100">
+                  <td className="py-3 px-4">{item.agama}</td>
+                  <td className="py-3 px-4">{item.jumlah}</td>
+                  <td className="py-3 px-4">{item.persentase}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Preview Section */}
@@ -610,7 +638,7 @@ export default function DataDesaAdminPage() {
                     Kepala Keluarga
                   </p>
                   <p className="text-3xl font-bold">
-                    {formData.statistics.kepalakeluarga}
+                    {formData.statistics.kepala_keluarga}
                   </p>
                 </div>
                 <Home size={40} className="opacity-80" />
@@ -624,7 +652,7 @@ export default function DataDesaAdminPage() {
                     Luas Wilayah
                   </p>
                   <p className="text-3xl font-bold">
-                    {formData.statistics.luasWilayah}
+                    {formData.statistics.luas_wilayah}
                   </p>
                 </div>
                 <MapPin size={40} className="opacity-80" />
@@ -638,7 +666,7 @@ export default function DataDesaAdminPage() {
                     Angka Pertumbuhan
                   </p>
                   <p className="text-3xl font-bold">
-                    {formData.statistics.angkaPertumbuhan}
+                    {formData.statistics.angka_pertumbuhan}
                   </p>
                 </div>
                 <TrendingUp size={40} className="opacity-80" />
@@ -652,7 +680,7 @@ export default function DataDesaAdminPage() {
                     Jumlah Bayi
                   </p>
                   <p className="text-3xl font-bold">
-                    {formData.statistics.jumlahBayi}
+                    {formData.statistics.jumlah_bayi}
                   </p>
                 </div>
                 <Baby size={40} className="opacity-80" />
@@ -666,7 +694,7 @@ export default function DataDesaAdminPage() {
                     Angka Harapan Hidup
                   </p>
                   <p className="text-3xl font-bold">
-                    {formData.statistics.angkaHarapanHidup}
+                    {formData.statistics.angka_harapan_hidup}
                   </p>
                 </div>
                 <Heart size={40} className="opacity-80" />
@@ -698,7 +726,7 @@ export default function DataDesaAdminPage() {
               <div className="mt-4 space-y-2">
                 {formData.demographics.map((item, idx) => (
                   <div key={idx} className="flex justify-between text-sm">
-                    <span className="text-gray-600">{item.kategori}</span>
+                    <span className="text-gray-600">{item.kategori_usia}</span>
                     <span className="font-semibold">
                       {item.persentase} ({item.jumlah})
                     </span>
@@ -732,7 +760,7 @@ export default function DataDesaAdminPage() {
               <div className="mt-4 space-y-2">
                 {formData.gender.map((item, idx) => (
                   <div key={idx} className="flex justify-between text-sm">
-                    <span className="text-gray-600">{item.jenis}</span>
+                    <span className="text-gray-600">{item.jenis_kelamin}</span>
                     <span className="font-semibold">
                       {item.persentase} ({item.jumlah})
                     </span>
@@ -763,7 +791,9 @@ export default function DataDesaAdminPage() {
               <div className="mt-4 space-y-1 text-sm">
                 {formData.education.map((item, idx) => (
                   <div key={idx} className="flex justify-between">
-                    <span className="text-gray-600">{item.tingkat}</span>
+                    <span className="text-gray-600">
+                      {item.tingkat_pendidikan}
+                    </span>
                     <span className="font-semibold">{item.persentase}</span>
                   </div>
                 ))}
