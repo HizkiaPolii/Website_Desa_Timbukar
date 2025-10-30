@@ -1,385 +1,380 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import PageLayout from "@/components/PageLayout";
+import { apbdesApi } from "@/services/apbdesApi";
+import { ChevronDown } from "lucide-react";
 
-interface BudgetItem {
-  description: string;
-  amount: number;
+interface ApbdesData {
+  id: number;
+  tahun: number;
+  keterangan: string;
+  pendapatan: number | string;
+  belanja: number | string;
+  pembiayaan: number | string;
+  file_dokumen: string | null;
 }
 
-interface BudgetCategory {
-  category: string;
-  items: BudgetItem[];
-  total: number;
-}
-
-const formatCurrency = (value: number): string => {
+const formatCurrency = (value: number | string): string => {
+  const numValue = typeof value === "string" ? parseFloat(value) : value;
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
-  }).format(value);
+  }).format(numValue);
 };
 
 export default function ApbdesPage() {
-  // Data Pendapatan
-  const pendapatan: BudgetCategory[] = [
-    {
-      category: "Pendapatan Asli Desa (PAD)",
-      items: [
-        { description: "Pajak Desa", amount: 50000000 },
-        { description: "Retribusi Desa", amount: 35000000 },
-        { description: "Hasil Usaha Desa", amount: 40000000 },
-        { description: "Hasil Kekayaan Desa", amount: 25000000 },
-      ],
-      total: 150000000,
-    },
-    {
-      category: "Dana Transfer",
-      items: [
-        { description: "Dana Alokasi Umum (DAU)", amount: 800000000 },
-        { description: "Dana Alokasi Khusus (DAK)", amount: 300000000 },
-        { description: "Dana Desa", amount: 1200000000 },
-        { description: "Bagi Hasil Pajak & Retribusi", amount: 150000000 },
-      ],
-      total: 2450000000,
-    },
-    {
-      category: "Lain-lain Pendapatan",
-      items: [
-        { description: "Hibah", amount: 100000000 },
-        { description: "Pinjaman", amount: 50000000 },
-        { description: "Pendapatan Bunga", amount: 25000000 },
-      ],
-      total: 175000000,
-    },
-  ];
+  const [apbdesData, setApbdesData] = useState<ApbdesData | null>(null);
+  const [allApbdesData, setAllApbdesData] = useState<ApbdesData[]>([]);
+  const [selectedTahun, setSelectedTahun] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const totalPendapatan = pendapatan.reduce((sum, cat) => sum + cat.total, 0);
+  useEffect(() => {
+    const loadApbdesData = async () => {
+      try {
+        setIsLoading(true);
+        const allData = await apbdesApi.getAll();
 
-  // Data Belanja
-  const belanja: BudgetCategory[] = [
-    {
-      category: "Belanja Aparatur Desa",
-      items: [
-        { description: "Gaji & Tunjangan Kepala Desa", amount: 120000000 },
-        { description: "Gaji & Tunjangan Perangkat Desa", amount: 280000000 },
-        { description: "Asuransi Kesehatan Aparatur", amount: 60000000 },
-        { description: "Pelatihan Aparatur Desa", amount: 50000000 },
-      ],
-      total: 510000000,
-    },
-    {
-      category: "Belanja Pelayanan Publik",
-      items: [
-        { description: "Pendidikan & Pelatihan Masyarakat", amount: 200000000 },
-        { description: "Kesehatan Masyarakat", amount: 250000000 },
-        { description: "Puskesmas/Polindes", amount: 150000000 },
-        { description: "Program Kesejahteraan Sosial", amount: 300000000 },
-      ],
-      total: 900000000,
-    },
-    {
-      category: "Belanja Pembangunan Infrastruktur",
-      items: [
-        { description: "Pembangunan Jalan Desa", amount: 500000000 },
-        { description: "Pembangunan Irigasi", amount: 300000000 },
-        { description: "Pembangunan Gedung Pertemuan", amount: 250000000 },
-        { description: "Pembangunan Sanitasi & Air Bersih", amount: 200000000 },
-        { description: "Pembangunan Listrik Desa", amount: 150000000 },
-      ],
-      total: 1400000000,
-    },
-    {
-      category: "Belanja Pemberdayaan Masyarakat",
-      items: [
-        { description: "Program Pemberdayaan Ekonomi", amount: 150000000 },
-        { description: "Pelatihan Keterampilan", amount: 120000000 },
-        { description: "Dukungan UMKM", amount: 180000000 },
-        { description: "Program Pertanian Modern", amount: 140000000 },
-      ],
-      total: 590000000,
-    },
-    {
-      category: "Belanja Penyelenggaraan Pemerintahan",
-      items: [
-        { description: "Operasional Kantor Desa", amount: 80000000 },
-        { description: "Pemeliharaan Aset Desa", amount: 100000000 },
-        { description: "Perjalanan Dinas", amount: 60000000 },
-        { description: "Rapat & Pertemuan", amount: 40000000 },
-      ],
-      total: 280000000,
-    },
-    {
-      category: "Belanja Lain-lain",
-      items: [
-        { description: "Cadangan Umum", amount: 150000000 },
-        { description: "Koreksi Kesalahan Tahun Sebelumnya", amount: 25000000 },
-      ],
-      total: 175000000,
-    },
-  ];
+        if (allData && allData.length > 0) {
+          setAllApbdesData(allData);
+          // Ambil data tahun terbaru
+          const latestData = allData.reduce((latest, current) => {
+            const currentTahun =
+              typeof current.tahun === "string"
+                ? parseInt(current.tahun)
+                : current.tahun;
+            const latestTahun =
+              typeof latest.tahun === "string"
+                ? parseInt(latest.tahun)
+                : latest.tahun;
+            return currentTahun > latestTahun ? current : latest;
+          });
+          setApbdesData(latestData);
+          setSelectedTahun(
+            typeof latestData.tahun === "string"
+              ? parseInt(latestData.tahun)
+              : latestData.tahun
+          );
+        } else {
+          setError("Data APBDES belum tersedia");
+        }
+      } catch (err) {
+        console.error("Error loading APBDES data:", err);
+        setError("Gagal memuat data APBDES");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const totalBelanja = belanja.reduce((sum, cat) => sum + cat.total, 0);
-  const surplus = totalPendapatan - totalBelanja;
+    loadApbdesData();
+  }, []);
+
+  const handleTahunChange = (tahun: number) => {
+    const selected = allApbdesData.find(
+      (item) =>
+        (typeof item.tahun === "string" ? parseInt(item.tahun) : item.tahun) ===
+        tahun
+    );
+    if (selected) {
+      setApbdesData(selected);
+      setSelectedTahun(tahun);
+    }
+  };
+
+  // Handle ESC key untuk tutup modal
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsModalOpen(false);
+      }
+    };
+
+    if (isModalOpen) {
+      document.addEventListener("keydown", handleEsc);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [isModalOpen]);
+
+  // Convert string values to numbers if needed
+  const pendapatan = apbdesData
+    ? typeof apbdesData.pendapatan === "string"
+      ? parseFloat(apbdesData.pendapatan)
+      : apbdesData.pendapatan
+    : 0;
+
+  const belanja = apbdesData
+    ? typeof apbdesData.belanja === "string"
+      ? parseFloat(apbdesData.belanja)
+      : apbdesData.belanja
+    : 0;
+
+  const pembiayaan = apbdesData
+    ? typeof apbdesData.pembiayaan === "string"
+      ? parseFloat(apbdesData.pembiayaan)
+      : apbdesData.pembiayaan
+    : 0;
+
+  const surplus = pendapatan - belanja - pembiayaan;
 
   return (
     <PageLayout
       heroTitle="APBDES"
-      heroSubtitle="Anggaran Pendapatan dan Belanja Desa Timbukar Tahun Anggaran 2024"
+      heroSubtitle={
+        apbdesData
+          ? `Anggaran Pendapatan dan Belanja Desa Timbukar Tahun ${apbdesData.tahun}`
+          : "Anggaran Pendapatan dan Belanja Desa Timbukar"
+      }
       currentPage="apbdes"
     >
-      {/* Ringkasan APBDES */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow-md p-6 border-l-4 border-green-500">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            📊 Total Pendapatan
-          </h3>
-          <p className="text-3xl font-bold text-green-600">
-            {formatCurrency(totalPendapatan)}
-          </p>
-          <p className="text-xs text-gray-600 mt-2">Tahun Anggaran 2024</p>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mb-4" />
+            <p className="text-gray-600 font-semibold">Memuat data APBDES...</p>
+          </div>
         </div>
-
-        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg shadow-md p-6 border-l-4 border-red-500">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            💰 Total Belanja
-          </h3>
-          <p className="text-3xl font-bold text-red-600">
-            {formatCurrency(totalBelanja)}
-          </p>
-          <p className="text-xs text-gray-600 mt-2">Tahun Anggaran 2024</p>
+      ) : error ? (
+        <div className="bg-red-50 border-l-4 border-red-400 p-6 rounded mb-8">
+          <p className="text-red-700 font-semibold">⚠️ Error</p>
+          <p className="text-red-600">{error}</p>
         </div>
-
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            ✅ Surplus/Defisit
-          </h3>
-          <p className="text-3xl font-bold text-blue-600">
-            {formatCurrency(surplus)}
-          </p>
-          <p className="text-xs text-gray-600 mt-2">
-            {surplus >= 0 ? "Surplus" : "Defisit"}
-          </p>
-        </div>
-      </div>
-
-      {/* Pendapatan */}
-      <section className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          📈 PENDAPATAN
-        </h2>
-        <div className="space-y-4">
-          {pendapatan.map((category, idx) => (
-            <div
-              key={idx}
-              className="bg-white rounded-lg shadow-md overflow-hidden"
-            >
-              <div className="bg-gradient-to-r from-green-500 to-green-600 p-4">
-                <h3 className="text-lg font-bold text-white">
-                  {category.category}
-                </h3>
-              </div>
-              <div className="p-4">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b-2 border-gray-300">
-                      <th className="text-left py-2 font-semibold text-gray-700">
-                        Uraian
-                      </th>
-                      <th className="text-right py-2 font-semibold text-gray-700">
-                        Jumlah
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {category.items.map((item, itemIdx) => (
-                      <tr
-                        key={itemIdx}
-                        className="border-b border-gray-200 hover:bg-gray-50"
-                      >
-                        <td className="py-3 text-gray-700">
-                          {item.description}
-                        </td>
-                        <td className="py-3 text-right font-semibold text-gray-900">
-                          {formatCurrency(item.amount)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div className="border-t-2 border-gray-300 mt-3 pt-3 flex justify-between">
-                  <span className="font-bold text-gray-900">
-                    Total {category.category}:
-                  </span>
-                  <span className="font-bold text-green-600 text-lg">
-                    {formatCurrency(category.total)}
-                  </span>
+      ) : apbdesData ? (
+        <>
+          {/* Pemilihan Tahun */}
+          {allApbdesData.length > 0 && (
+            <div className="mb-8">
+              <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  📅 Pilih Tahun APBDES
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedTahun || ""}
+                    onChange={(e) =>
+                      handleTahunChange(parseInt(e.target.value))
+                    }
+                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none bg-white cursor-pointer transition-all hover:border-gray-400"
+                  >
+                    <option value="">-- Pilih Tahun --</option>
+                    {allApbdesData
+                      .map((item) =>
+                        typeof item.tahun === "string"
+                          ? parseInt(item.tahun)
+                          : item.tahun
+                      )
+                      .sort((a, b) => b - a)
+                      .map((tahun) => (
+                        <option key={tahun} value={tahun}>
+                          Tahun {tahun}
+                        </option>
+                      ))}
+                  </select>
+                  <ChevronDown
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"
+                    size={20}
+                  />
                 </div>
               </div>
             </div>
-          ))}
+          )}
 
-          <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-6 text-white">
-            <div className="flex justify-between items-center">
-              <span className="text-xl font-bold">TOTAL PENDAPATAN</span>
-              <span className="text-3xl font-bold">
-                {formatCurrency(totalPendapatan)}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Belanja */}
-      <section className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          📉 BELANJA
-        </h2>
-        <div className="space-y-4">
-          {belanja.map((category, idx) => (
-            <div
-              key={idx}
-              className="bg-white rounded-lg shadow-md overflow-hidden"
-            >
-              <div className="bg-gradient-to-r from-red-500 to-red-600 p-4">
-                <h3 className="text-lg font-bold text-white">
-                  {category.category}
-                </h3>
-              </div>
-              <div className="p-4">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b-2 border-gray-300">
-                      <th className="text-left py-2 font-semibold text-gray-700">
-                        Uraian
-                      </th>
-                      <th className="text-right py-2 font-semibold text-gray-700">
-                        Jumlah
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {category.items.map((item, itemIdx) => (
-                      <tr
-                        key={itemIdx}
-                        className="border-b border-gray-200 hover:bg-gray-50"
-                      >
-                        <td className="py-3 text-gray-700">
-                          {item.description}
-                        </td>
-                        <td className="py-3 text-right font-semibold text-gray-900">
-                          {formatCurrency(item.amount)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div className="border-t-2 border-gray-300 mt-3 pt-3 flex justify-between">
-                  <span className="font-bold text-gray-900">
-                    Total {category.category}:
-                  </span>
-                  <span className="font-bold text-red-600 text-lg">
-                    {formatCurrency(category.total)}
-                  </span>
+          {/* Ringkasan Lengkap */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              📋 Detail APBDES Tahun {apbdesData.tahun}
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Pendapatan */}
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow-lg p-6 border-l-4 border-green-500">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-4xl">📈</div>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Pendapatan
+                  </h3>
                 </div>
+                <p className="text-3xl font-bold text-green-600 mb-2">
+                  {formatCurrency(pendapatan)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Total pendapatan desa tahun {apbdesData.tahun}
+                </p>
+              </div>
+
+              {/* Belanja */}
+              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg shadow-lg p-6 border-l-4 border-red-500">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-4xl">💸</div>
+                  <h3 className="text-lg font-bold text-gray-900">Belanja</h3>
+                </div>
+                <p className="text-3xl font-bold text-red-600 mb-2">
+                  {formatCurrency(belanja)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Total belanja desa tahun {apbdesData.tahun}
+                </p>
+              </div>
+
+              {/* Surplus/Defisit */}
+              <div
+                className={`bg-gradient-to-br ${
+                  surplus >= 0
+                    ? "from-blue-50 to-blue-100"
+                    : "from-orange-50 to-orange-100"
+                } rounded-lg shadow-lg p-6 border-l-4 ${
+                  surplus >= 0 ? "border-blue-500" : "border-orange-500"
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-4xl">{surplus >= 0 ? "✅" : "⚠️"}</div>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    {surplus >= 0 ? "Surplus" : "Defisit"}
+                  </h3>
+                </div>
+                <p
+                  className={`text-3xl font-bold ${
+                    surplus >= 0 ? "text-blue-600" : "text-orange-600"
+                  } mb-2`}
+                >
+                  {formatCurrency(surplus)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {surplus >= 0 ? "Sisa anggaran" : "Kekurangan anggaran"}
+                </p>
               </div>
             </div>
-          ))}
 
-          <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-lg p-6 text-white">
-            <div className="flex justify-between items-center">
-              <span className="text-xl font-bold">TOTAL BELANJA</span>
-              <span className="text-3xl font-bold">
-                {formatCurrency(totalBelanja)}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Ringkasan Akhir */}
-      <section className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md p-8 border-l-4 border-blue-500">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          📋 Ringkasan APBDES
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <table className="w-full text-sm">
-              <tbody>
-                <tr className="border-b border-gray-300">
-                  <td className="py-2 text-gray-700 font-semibold">
-                    Total Pendapatan:
-                  </td>
-                  <td className="py-2 text-right font-bold text-green-600">
-                    {formatCurrency(totalPendapatan)}
-                  </td>
-                </tr>
-                <tr className="border-b border-gray-300">
-                  <td className="py-2 text-gray-700 font-semibold">
-                    Total Belanja:
-                  </td>
-                  <td className="py-2 text-right font-bold text-red-600">
-                    {formatCurrency(totalBelanja)}
-                  </td>
-                </tr>
-                <tr className="bg-blue-100">
-                  <td className="py-2 text-gray-900 font-bold">
-                    Surplus/Defisit:
-                  </td>
-                  <td className="py-2 text-right font-bold text-blue-600 text-lg">
-                    {formatCurrency(surplus)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="flex flex-col justify-center">
-            <div className="bg-white rounded-lg p-4 border-l-4 border-yellow-500">
-              <p className="text-sm text-gray-700">
-                <strong>Catatan:</strong> Data APBDES di atas adalah contoh
-                untuk tahun anggaran 2024. Untuk informasi detail dan dokumen
-                resmi APBDES, silakan hubungi Kantor Desa Timbukar atau periksa
-                papan informasi publik desa.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Foto APBDES Baliho */}
-      <section className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          📸 Foto APBDES
-        </h2>
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <p className="text-gray-600 mb-6">
-            Berikut adalah dokumentasi APBDES yang dicetak sebagai baliho dan
-            ditampilkan di masyarakat Desa Timbukar
-          </p>
-
-          {/* Placeholder untuk foto - akan ditampilkan jika ada */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-gray-100 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition">
-              <div className="relative w-full h-48 bg-gray-200 flex items-center justify-center">
-                <div className="text-center">
-                  <span className="text-4xl mb-2 block">📋</span>
-                  <p className="text-gray-500 text-sm">
-                    Foto APBDES akan ditampilkan di sini
+            {/* Info Pembiayaan */}
+            <div className="mt-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg shadow-lg p-6 border-l-4 border-purple-500">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    Pembiayaan
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Dana tambahan/pembiayaan yang digunakan
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-purple-600">
+                    {formatCurrency(pembiayaan)}
                   </p>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>💡 Info:</strong> Admin dapat menambahkan foto APBDES
-              (baliho) melalui halaman Edit APBDes di admin dashboard.
-            </p>
-          </div>
-        </div>
-      </section>
+            {/* Keterangan */}
+            {apbdesData.keterangan && (
+              <div className="mt-6 bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                  Catatan
+                </h4>
+                <p className="text-gray-700 leading-relaxed">
+                  {apbdesData.keterangan}
+                </p>
+              </div>
+            )}
+          </section>
+
+          {/* Foto APBDES Baliho */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              📸 Foto APBDES
+            </h2>
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6">
+                <p className="text-white">
+                  Dokumentasi APBDES yang dicetak sebagai baliho dan ditampilkan
+                  di masyarakat Desa Timbukar
+                </p>
+              </div>
+
+              {apbdesData.file_dokumen ? (
+                <div
+                  className="relative w-full bg-gray-100 flex items-center justify-center min-h-96 cursor-pointer hover:opacity-90 transition"
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  <img
+                    src={apbdesData.file_dokumen}
+                    alt={`APBDES ${apbdesData.tahun}`}
+                    className="w-full h-auto object-contain"
+                  />
+                  <div className="p-6 bg-gradient-to-t from-black/40 to-transparent absolute bottom-0 w-full">
+                    <h3 className="text-white font-bold text-lg">
+                      APBDES Tahun {apbdesData.tahun}
+                    </h3>
+                  </div>
+                  <div className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded transition">
+                    <span className="text-lg">🔍</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full h-96 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                  <div className="text-center">
+                    <span className="text-6xl mb-4 block">📸</span>
+                    <p className="text-gray-600 font-semibold text-lg">
+                      Belum ada foto APBDES
+                    </p>
+                    <p className="text-gray-500 text-sm mt-2">
+                      Admin akan segera menambahkan dokumentasi
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Modal Lightbox */}
+          {isModalOpen && apbdesData.file_dokumen && (
+            <div
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setIsModalOpen(false)}
+            >
+              <div
+                className="relative max-w-4xl max-h-[90vh] w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Close Button */}
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="absolute -top-10 right-0 text-white hover:text-gray-300 text-3xl font-bold transition"
+                >
+                  ✕
+                </button>
+
+                {/* Image Container */}
+                <div className="bg-black rounded-lg overflow-hidden flex items-center justify-center">
+                  <img
+                    src={apbdesData.file_dokumen}
+                    alt={`APBDES ${apbdesData.tahun}`}
+                    className="w-full h-auto max-h-[80vh] object-contain"
+                  />
+                </div>
+
+                {/* Image Info */}
+                <div className="mt-4 bg-white rounded-lg p-4">
+                  <h3 className="font-bold text-gray-900">
+                    APBDES Tahun {apbdesData.tahun}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {apbdesData.keterangan}
+                  </p>
+                </div>
+
+                {/* Keyboard hint */}
+                <p className="text-center text-gray-300 text-sm mt-2">
+                  Tekan ESC atau klik di luar untuk menutup
+                </p>
+              </div>
+            </div>
+          )}
+        </>
+      ) : null}
     </PageLayout>
   );
 }

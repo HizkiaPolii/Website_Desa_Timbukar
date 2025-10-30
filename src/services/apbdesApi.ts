@@ -25,7 +25,7 @@ export interface CreateApbdesInput {
   pendapatan: number | string;
   belanja: number | string;
   pembiayaan: number | string;
-  file_dokumen?: string;
+  file_dokumen?: string | null;
 }
 
 export interface UpdateApbdesInput {
@@ -34,7 +34,7 @@ export interface UpdateApbdesInput {
   pendapatan?: number | string;
   belanja?: number | string;
   pembiayaan?: number | string;
-  file_dokumen?: string;
+  file_dokumen?: string | null;
 }
 
 /**

@@ -13,6 +13,7 @@ interface ApbdesData {
   pendapatan: number | string;
   belanja: number | string;
   pembiayaan: number | string;
+  file_dokumen?: string | null;
 }
 
 const formatCurrency = (value: number | string): string => {
@@ -37,6 +38,7 @@ export default function AdminApbdesPage() {
     belanja: "",
     pembiayaan: "",
     keterangan: "",
+    file_dokumen: "",
   });
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -81,6 +83,7 @@ export default function AdminApbdesPage() {
             belanja: String(data.belanja),
             pembiayaan: String(data.pembiayaan),
             keterangan: data.keterangan || "",
+            file_dokumen: data.file_dokumen || "",
           });
 
           console.log("Loaded APBDES tahun", selectedYear, ":", data);
@@ -97,6 +100,7 @@ export default function AdminApbdesPage() {
           belanja: "",
           pembiayaan: "",
           keterangan: "",
+          file_dokumen: "",
         });
       } finally {
         setIsLoading(false);
@@ -114,6 +118,51 @@ export default function AdminApbdesPage() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      showToast.error("Hanya file gambar yang diizinkan");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast.error("Ukuran file maksimal 5MB");
+      return;
+    }
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("file", file);
+      formDataToSend.append("folder", "apbdes"); // Simpan di folder khusus APBDES
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload gagal");
+      }
+
+      const result = await response.json();
+      const filePath = result.filePath || result.url || result.path;
+
+      setFormData((prev) => ({
+        ...prev,
+        file_dokumen: filePath,
+      }));
+
+      showToast.success("Foto berhasil diupload");
+    } catch (error) {
+      console.error("Upload error:", error);
+      showToast.error("Gagal upload foto");
+    }
   };
 
   const handleSave = async () => {
@@ -139,6 +188,7 @@ export default function AdminApbdesPage() {
         pendapatan: pendapatanAmount,
         belanja: belanjaAmount,
         pembiayaan: pembiayaanAmount,
+        file_dokumen: formData.file_dokumen || null,
       };
 
       if (apbdesData?.id) {
@@ -315,6 +365,44 @@ export default function AdminApbdesPage() {
                       {formatCurrency(formData.pembiayaan)}
                     </p>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    📸 Foto APBDES (Baliho)
+                  </label>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                      <span className="text-xs text-gray-500">Max 5MB</span>
+                    </div>
+                    {formData.file_dokumen && (
+                      <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-emerald-200 bg-gray-50">
+                        <img
+                          src={formData.file_dokumen}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              file_dokumen: "",
+                            }))
+                          }
+                          className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
