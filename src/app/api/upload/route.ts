@@ -15,10 +15,20 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
+    const folder = (formData.get("folder") as string) || "general"; // Ambil folder dari request
 
     if (!file) {
       return NextResponse.json(
         { error: "Tidak ada file yang diunggah" },
+        { status: 400 }
+      );
+    }
+
+    // Validasi folder (security: hanya izinkan folder tertentu)
+    const allowedFolders = ["pemerintahan", "bumdes", "galeri", "general"];
+    if (!allowedFolders.includes(folder)) {
+      return NextResponse.json(
+        { error: `Folder tidak valid. Hanya: ${allowedFolders.join(", ")}` },
         { status: 400 }
       );
     }
@@ -41,14 +51,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate nama file unik
+    // Generate nama file unik dengan prefix folder
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(7);
     const extension = file.name.split(".").pop() || "jpg";
-    const filename = `pemerintahan-${timestamp}-${random}.${extension}`;
+    const filename = `${folder}-${timestamp}-${random}.${extension}`;
 
-    // Path untuk menyimpan file
-    const uploadDir = join(process.cwd(), "public", "images", "pemerintahan");
+    // Path untuk menyimpan file (dinamis berdasarkan folder)
+    const uploadDir = join(process.cwd(), "public", "images", folder);
     const filepath = join(uploadDir, filename);
 
     // Buat direktori jika belum ada
@@ -60,13 +70,16 @@ export async function POST(request: NextRequest) {
     await writeFile(filepath, buffer);
 
     // Return path relatif untuk digunakan di frontend
-    const publicPath = `/images/pemerintahan/${filename}`;
+    const publicPath = `/images/${folder}/${filename}`;
+
+    console.log(`File uploaded: ${publicPath}`);
 
     return NextResponse.json(
       {
         success: true,
         filePath: publicPath,
         filename: filename,
+        folder: folder,
       },
       { status: 200 }
     );

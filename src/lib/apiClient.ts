@@ -1,9 +1,17 @@
 /**
  * API Client untuk Desa Timbukar Backend
- * Backend URL: http://localhost:5000/api
+ * Menggunakan Express + PostgreSQL
+ * Backend URL: http://localhost:3000/api
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import {
+  API_BASE_URL,
+  REQUEST_CONFIG,
+  HTTP_STATUS,
+  ERROR_MESSAGES,
+} from "@/config/apiConfig";
+
+const API_URL = API_BASE_URL;
 
 // ==================== TYPES ====================
 
@@ -60,43 +68,165 @@ export function removeToken(): void {
   localStorage.removeItem("user");
 }
 
+// ==================== ERROR HANDLING ====================
+
+export interface ApiError extends Error {
+  status?: number;
+  code?: string;
+  response?: any;
+}
+
 /**
- * Generic API call function
+ * Parse error response dari API
+ */
+export function parseApiError(error: any): ApiError {
+  const apiError: ApiError = new Error();
+
+  if (error.response?.data) {
+    // Error dari server
+    const data = error.response.data;
+    apiError.message =
+      data.message || data.error || "Terjadi kesalahan pada server";
+    apiError.status = error.response.status;
+    apiError.code = data.code;
+    apiError.response = data;
+  } else if (error.message === "Network Error") {
+    // Network error
+    apiError.message = ERROR_MESSAGES.NETWORK_ERROR;
+    apiError.code = "NETWORK_ERROR";
+  } else if (error.code === "ECONNABORTED") {
+    // Timeout
+    apiError.message = ERROR_MESSAGES.TIMEOUT_ERROR;
+    apiError.code = "TIMEOUT_ERROR";
+  } else {
+    // Other errors
+    apiError.message = error.message || "Terjadi kesalahan";
+    apiError.code = "UNKNOWN_ERROR";
+  }
+
+  return apiError;
+}
+
+/**
+ * Handle specific HTTP status errors
+ */
+export function handleHttpError(status: number, data?: any): string {
+  switch (status) {
+    case HTTP_STATUS.UNAUTHORIZED:
+      removeToken();
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+      return ERROR_MESSAGES.UNAUTHORIZED_ERROR;
+
+    case HTTP_STATUS.FORBIDDEN:
+      return ERROR_MESSAGES.FORBIDDEN_ERROR;
+
+    case HTTP_STATUS.NOT_FOUND:
+      return ERROR_MESSAGES.NOT_FOUND_ERROR;
+
+    case HTTP_STATUS.CONFLICT:
+      return data?.message || "Data sudah ada";
+
+    case HTTP_STATUS.BAD_REQUEST:
+      return data?.message || ERROR_MESSAGES.VALIDATION_ERROR;
+
+    case HTTP_STATUS.INTERNAL_SERVER_ERROR:
+    case HTTP_STATUS.SERVICE_UNAVAILABLE:
+      return ERROR_MESSAGES.SERVER_ERROR;
+
+    default:
+      return "Terjadi kesalahan";
+  }
+}
+
+// ==================== FETCH WRAPPER ====================
+
+interface FetchOptions extends RequestInit {
+  retry?: number;
+  timeout?: number;
+}
+
+/**
+ * Generic API call function dengan retry dan timeout
  */
 async function apiCall<T = any>(
   endpoint: string,
-  options: RequestInit = {}
+  options: FetchOptions = {}
 ): Promise<ApiResponse<T>> {
+  const {
+    retry = 0,
+    timeout = REQUEST_CONFIG.TIMEOUT,
+    ...fetchOptions
+  } = options;
+
   const url = `${API_URL}${endpoint}`;
   const token = getToken();
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...(options.headers as Record<string, string>),
+    ...(fetchOptions.headers as Record<string, string>),
   };
 
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
+  // Setup request dengan timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
   try {
+    console.log(`📡 ${fetchOptions.method || "GET"} ${endpoint}`);
+
     const response = await fetch(url, {
-      ...options,
+      ...fetchOptions,
       headers,
+      signal: controller.signal,
     });
 
-    const data = (await response.json()) as ApiResponse<T>;
+    clearTimeout(timeoutId);
 
+    // Parse response
+    const contentType = response.headers.get("content-type");
+    let data: any = null;
+
+    if (contentType?.includes("application/json")) {
+      data = (await response.json()) as ApiResponse<T>;
+    } else {
+      data = await response.text();
+    }
+
+    // Handle error responses
     if (!response.ok) {
-      const error = new Error(data.error || `API Error: ${response.status}`);
-      console.error("API Error:", error, data);
+      const errorMessage = handleHttpError(response.status, data);
+      const error: ApiError = new Error(errorMessage);
+      error.status = response.status;
+      error.response = data;
+
+      console.error(`❌ Error ${response.status}:`, errorMessage);
       throw error;
     }
 
+    console.log(`✅ Success:`, data);
+
     return data;
-  } catch (error) {
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+
+    // Retry logic
+    if (retry < REQUEST_CONFIG.RETRY_ATTEMPTS && !error.status) {
+      console.warn(
+        `⚠️ Retrying (${retry + 1}/${REQUEST_CONFIG.RETRY_ATTEMPTS})...`
+      );
+      await new Promise((resolve) =>
+        setTimeout(resolve, REQUEST_CONFIG.RETRY_DELAY * (retry + 1))
+      );
+      return apiCall(endpoint, { ...options, retry: retry + 1 });
+    }
+
     console.error(`API Call Error [${endpoint}]:`, error);
-    throw error;
+    throw parseApiError(error);
   }
 }
 

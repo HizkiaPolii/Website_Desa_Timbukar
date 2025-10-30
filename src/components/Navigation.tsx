@@ -116,9 +116,9 @@ export default function Navigation({ currentPage = "home" }: NavProps) {
       page: "data-desa",
     },
     { href: "/rkpdesa", label: "RKPDESA", page: "rkpdesa" },
-    { href: "/galeri", label: "GALERI", page: "galeri" },
     { href: "/bumdes", label: "BUMDES", page: "bumdes" },
     { href: "/apbdes", label: "APBDES", page: "apbdes" },
+    { href: "/galeri", label: "GALERI", page: "galeri" },
     { href: "/kontak", label: "KONTAK", page: "kontak" },
   ];
 

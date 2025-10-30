@@ -10,6 +10,7 @@ interface ImageUploadFieldProps {
   label?: string;
   placeholder?: string;
   required?: boolean;
+  uploadFolder?: string; // 'pemerintahan', 'bumdes', 'galeri', dll
 }
 
 export default function ImageUploadField({
@@ -18,6 +19,7 @@ export default function ImageUploadField({
   label = "Foto",
   placeholder = "Drag and drop foto atau klik untuk pilih",
   required = false,
+  uploadFolder = "general", // Default folder
 }: ImageUploadFieldProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -53,6 +55,7 @@ export default function ImageUploadField({
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("folder", uploadFolder); // Kirim folder ke backend
 
       // Get token untuk authorization
       const token =

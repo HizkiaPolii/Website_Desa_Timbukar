@@ -64,10 +64,10 @@ export default function AdminSidebar() {
       page: "data-desa",
     },
     {
-      href: "/admin/edit-rkpdesa",
+      href: "/admin/rkpdesa",
       label: "Edit RKPDESA",
       icon: <FileText size={20} />,
-      page: "edit-rkpdesa",
+      page: "rkpdesa",
     },
     {
       href: "/admin/galeri",
