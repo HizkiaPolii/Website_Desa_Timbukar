@@ -25,7 +25,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Validasi folder (security: hanya izinkan folder tertentu)
-    const allowedFolders = ["pemerintahan", "bumdes", "galeri", "general"];
+    const allowedFolders = [
+      "pemerintahan",
+      "bumdes",
+      "galeri",
+      "apbdes",
+      "general",
+    ];
     if (!allowedFolders.includes(folder)) {
       return NextResponse.json(
         { error: `Folder tidak valid. Hanya: ${allowedFolders.join(", ")}` },
