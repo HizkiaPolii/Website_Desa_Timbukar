@@ -115,13 +115,30 @@ export default function EditBumdesPage() {
         ? "http://localhost:5000/api/bumdes"
         : `http://localhost:5000/api/bumdes/${editingId}`;
 
+      // Bersihkan data: hanya kirim field yang valid, tidak null/undefined
+      const cleanData = Object.entries(editFormData).reduce(
+        (acc, [key, value]) => {
+          if (value !== null && value !== undefined && value !== "") {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, any>
+      );
+
+      // Jangan kirim field id, created_at, updated_at pada PUT request
+      if (!isNewRecord) {
+        delete (cleanData as any).id;
+        delete (cleanData as any).created_at;
+        delete (cleanData as any).updated_at;
+      }
+
       console.log(`Saving BUMDES (${method})`, {
         url,
         isNewRecord,
-        data: editFormData,
-        dataSize: JSON.stringify(editFormData).length,
-        hasGambar: !!editFormData.gambar,
-        gambarLength: editFormData.gambar?.length || 0,
+        data: cleanData,
+        dataSize: JSON.stringify(cleanData).length,
+        hasGambar: !!cleanData.gambar,
         token: token ? "present" : "missing",
       });
 
@@ -131,7 +148,7 @@ export default function EditBumdesPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(editFormData),
+        body: JSON.stringify(cleanData),
       });
 
       console.log(
@@ -148,11 +165,16 @@ export default function EditBumdesPage() {
           const errorData = await response.json();
           fullErrorData = errorData;
           errorMessage =
-            errorData.message || errorData.error || JSON.stringify(errorData);
+            errorData.message || 
+            errorData.error || 
+            errorData.msg ||
+            JSON.stringify(errorData);
+          
           console.error("Backend error response (JSON):", {
             status: response.status,
             statusText: response.statusText,
             body: errorData,
+            errorMessage: errorMessage,
           });
         } catch (e) {
           try {
@@ -165,6 +187,7 @@ export default function EditBumdesPage() {
             errorMessage = errorText || `HTTP ${response.status}`;
           } catch (e2) {
             console.error("Could not parse error response");
+            errorMessage = `HTTP ${response.status} ${response.statusText}`;
           }
         }
 

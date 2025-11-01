@@ -15,7 +15,6 @@ import {
   Database,
   DollarSign,
   BookOpen,
-  Settings,
   LogOut,
   ArrowLeft,
 } from "lucide-react";
@@ -86,6 +85,12 @@ export default function AdminSidebar() {
       label: "Edit APBDes",
       icon: <DollarSign size={20} />,
       page: "apbdes",
+    },
+    {
+      href: "/admin/kontak",
+      label: "Pesan Kontak",
+      icon: <FileText size={20} />,
+      page: "kontak",
     },
   ];
 
@@ -163,20 +168,8 @@ export default function AdminSidebar() {
           {/* Divider */}
           <div className="border-t border-gray-700 my-6" />
 
-          {/* Settings & Logout */}
+          {/* Logout */}
           <nav className="space-y-2">
-            <Link
-              href="/admin/settings"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                isActive("settings")
-                  ? "bg-emerald-600 text-white font-semibold"
-                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
-              }`}
-            >
-              <Settings size={20} />
-              <span className="text-sm">Pengaturan</span>
-            </Link>
-
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-red-600 hover:text-white transition-all duration-200"

@@ -45,7 +45,15 @@ export default function ImageUploadField({
   };
 
   const handleFileUpload = async (file: File) => {
+    console.log("🔵 handleFileUpload start, file:", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      uploadFolder: uploadFolder,
+    });
+
     if (!isValidImageFile(file)) {
+      console.error("❌ File validation failed");
       return;
     }
 
@@ -59,14 +67,14 @@ export default function ImageUploadField({
 
       // Get token untuk authorization
       const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("token")
-          : null;
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
       const headers: Record<string, string> = {};
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
+
+      console.log("📤 Upload request to /api/upload with folder:", uploadFolder);
 
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -74,23 +82,43 @@ export default function ImageUploadField({
         headers,
       });
 
+      console.log("📡 Upload response status:", response.status);
+
       if (!response.ok) {
         const error = await response.json();
+        console.error("❌ Upload error response:", error);
         throw new Error(error.message || "Upload gagal");
       }
 
       const data = await response.json();
-      const filePath = data.filePath || data.path;
+      console.log("✅ Upload response received:", data);
+      
+      const filePath = data.filePath || data.publicPath || data.path || data.filename;
 
-      // Set preview
-      setPreview(filePath);
-      onChange(filePath);
+      if (!filePath) {
+        throw new Error("Upload response tidak mengandung filePath. Response: " + JSON.stringify(data));
+      }
+
+      // Jika filePath hanya nama file, tambahkan path lengkap
+      let finalPath = filePath;
+      if (filePath && !filePath.startsWith("/")) {
+        finalPath = `/images/${uploadFolder}/${filePath}`;
+        console.log("⚠️  Added folder prefix ->" , finalPath);
+      }
+
+      console.log("🟢 Final image path:", finalPath);
+
+      // Set preview dengan full path untuk menampilkan gambar
+      setPreview(finalPath);
+      onChange(finalPath); // Kirim full path ke parent component
+      console.log("🟢 onChange callback triggered with:", finalPath);
       setUploadError(null);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Gagal upload foto";
       setUploadError(errorMessage);
-      console.error("Upload error:", error);
+      console.error("🔴 Upload error:", error);
+      console.error("Error message:", errorMessage);
     } finally {
       setIsUploading(false);
     }
@@ -141,6 +169,18 @@ export default function ImageUploadField({
     }
   };
 
+  const getPreviewUrl = (imagePath: string | null): string => {
+    if (!imagePath) return "/images/placeholder.svg";
+    // Jika sudah full URL, kembalikan as-is
+    if (imagePath.startsWith("http")) return imagePath;
+    // Jika path absolut (dari Next.js API)
+    if (imagePath.startsWith("/images/")) return imagePath;
+    // Jika data URL
+    if (imagePath.startsWith("data:")) return imagePath;
+    // Jika hanya nama file (dari backend database), transform to /images/galeri/...
+    return `/images/galeri/${imagePath}`;
+  };
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -159,7 +199,7 @@ export default function ImageUploadField({
         <div className="space-y-3">
           <div className="relative w-full aspect-square max-w-xs mx-auto rounded-lg overflow-hidden border-2 border-emerald-200 bg-gray-50">
             <Image
-              src={preview}
+              src={getPreviewUrl(preview)}
               alt="Preview"
               fill
               className="object-cover"

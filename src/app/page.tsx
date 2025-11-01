@@ -14,6 +14,7 @@ import {
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import Card from "@/components/Card";
+import GaleriSlideshow from "@/components/GaleriSlideshow";
 
 export default function DesaTimbukar() {
   const [expandedProfil, setExpandedProfil] = useState(false);
@@ -163,6 +164,22 @@ export default function DesaTimbukar() {
               </Card>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Galeri Section */}
+      <section id="galeri" className="section-padding bg-gradient-to-br from-emerald-50 to-white">
+        <div className="container-main">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="title-section text-emerald-600 mb-4">
+              Galeri Desa Timbukar
+            </h2>
+            <p className="subtitle-section max-w-2xl mx-auto">
+              Jelajahi keindahan dan aktivitas kehidupan di Desa Timbukar melalui galeri foto kami
+            </p>
+          </div>
+
+          <GaleriSlideshow />
         </div>
       </section>
 

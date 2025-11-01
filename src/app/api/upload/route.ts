@@ -57,11 +57,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate nama file unik dengan prefix folder
+    // Generate nama file unik sesuai format backend (nama-timestamp-random.ext)
     const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(7);
+    const random = Math.round(Math.random() * 1e9);
     const extension = file.name.split(".").pop() || "jpg";
-    const filename = `${folder}-${timestamp}-${random}.${extension}`;
+    const basename = file.name.split(".").slice(0, -1).join(".") || "file";
+    // Format: nama-1761813274085-81674125.jpg
+    const filename = `${basename}-${timestamp}-${random}.${extension}`;
 
     // Path untuk menyimpan file (dinamis berdasarkan folder)
     const uploadDir = join(process.cwd(), "public", "images", folder);
@@ -75,7 +77,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     await writeFile(filepath, buffer);
 
-    // Return path relatif untuk digunakan di frontend
+    // Return full path dengan format: /images/{folder}/{filename}
     const publicPath = `/images/${folder}/${filename}`;
 
     console.log(`File uploaded: ${publicPath}`);
@@ -83,9 +85,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        filePath: publicPath,
+        filePath: publicPath, // ✅ Kirim full path dengan leading /
+        path: publicPath, // Alternative property name
         filename: filename,
         folder: folder,
+        publicPath: publicPath, // Public path untuk preview
       },
       { status: 200 }
     );

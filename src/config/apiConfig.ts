@@ -33,6 +33,12 @@ export const API_ENDPOINTS = {
   LEMBAGA: "/lembaga-masyarakat",
   LEMBAGA_BY_ID: (id: number) => `/lembaga-masyarakat/${id}`,
 
+  // Galeri
+  GALERI: "/galeri",
+  GALERI_BY_ID: (id: number) => `/galeri/${id}`,
+  GALERI_BY_KATEGORI: (kategori: string) => `/galeri/kategori/${kategori}`,
+  GALERI_SEARCH: "/galeri/search",
+
   // Upload
   UPLOAD: "/upload",
   UPLOAD_PDF: "/upload/pdf",

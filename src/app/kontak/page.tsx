@@ -33,21 +33,45 @@ export default function KontakDesa() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulasi submit
-    setTimeout(() => {
-      toast.success("Terima kasih! Pesan Anda telah terkirim.");
-      setFormData({
-        nama: "",
-        email: "",
-        telepon: "",
-        subjek: "",
-        pesan: "",
+
+    try {
+      const response = await fetch("/api/kontak", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nama: formData.nama,
+          email: formData.email,
+          no_telepon: formData.telepon,
+          subjek: formData.subjek,
+          pesan: formData.pesan,
+        }),
       });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success("Terima kasih! Pesan Anda telah terkirim.");
+        setFormData({
+          nama: "",
+          email: "",
+          telepon: "",
+          subjek: "",
+          pesan: "",
+        });
+      } else {
+        toast.error(data.error || "Gagal mengirim pesan");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("Terjadi kesalahan saat mengirim pesan");
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   const infoKontak = [

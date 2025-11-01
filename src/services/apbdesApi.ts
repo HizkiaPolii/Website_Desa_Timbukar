@@ -1,11 +1,6 @@
-/**
- * APBDES API Service
- * Menggunakan Next.js API Routes sebagai proxy ke Express backend
- * Backend Express: http://localhost:5000/api/apbdes
- * Next.js API Route: http://localhost:3000/api/apbdes
- */
-
-// ==================== TYPES ====================
+// APBDES API Service
+// Dokumentasi: Backend Express + PostgreSQL
+// Update API_BASE_URL sesuai dengan lokasi backend Anda
 
 export interface ApbdesData {
   id: number;
@@ -25,7 +20,7 @@ export interface CreateApbdesInput {
   pendapatan: number | string;
   belanja: number | string;
   pembiayaan: number | string;
-  file_dokumen?: string | null;
+  file_dokumen?: string;
 }
 
 export interface UpdateApbdesInput {
@@ -34,8 +29,24 @@ export interface UpdateApbdesInput {
   pendapatan?: number | string;
   belanja?: number | string;
   pembiayaan?: number | string;
-  file_dokumen?: string | null;
+  file_dokumen?: string;
 }
+
+/**
+ * API Base URL Configuration
+ *
+ * Ubah sesuai dengan lokasi backend Anda di .env.local:
+ * NEXT_PUBLIC_API_URL=http://localhost:5000/api
+ *
+ * Maka API_BASE_URL akan menjadi: http://localhost:5000/api/apbdes
+ */
+const getApiBaseUrl = (): string => {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  return `${baseUrl}/apbdes`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Get auth token from localStorage
@@ -67,9 +78,6 @@ const fetchWithAuth = async (
   });
 };
 
-// API Base URL - menggunakan Next.js API routes (relative URL, tidak perlu localhost)
-const API_BASE_URL = "/api/apbdes";
-
 export const apbdesApi = {
   /**
    * Ambil semua data APBDES dari backend
@@ -90,8 +98,7 @@ export const apbdesApi = {
 
       const result = await response.json();
       console.log("✅ Response:", result);
-      // Backend mengembalikan array langsung atau wrapped dalam object
-      return Array.isArray(result) ? result : result.data || [];
+      return result.data || [];
     } catch (error) {
       console.error("❌ Error fetching all APBDES:", error);
       return [];

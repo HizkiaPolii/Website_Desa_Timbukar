@@ -1,308 +1,248 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { X, Grid3x3, Search } from "lucide-react";
+import { X } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
+import { showToast } from "@/utils/toast";
+
+interface GaleriItem {
+  id: number;
+  judul: string;
+  deskripsi: string;
+  gambar: string;
+  kategori: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ApiResponse {
+  message: string;
+  data: GaleriItem[] | GaleriItem;
+}
 
 export default function GaleriPage() {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState("semua");
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Data Galeri
-  const galeriData = [
-    {
-      id: 1,
-      title: "Air Terjun 3 Tingkat",
-      category: "wisata",
-      description: "Keindahan air terjun bertingkat di Desa Timbukar",
-      image: "/images/placeholder.svg",
-      date: "2025-01-15",
-    },
-    {
-      id: 2,
-      title: "Homestay Timbukar",
-      category: "wisata",
-      description: "Penginapan nyaman dengan pemandangan alam asri",
-      image: "/images/placeholder.svg",
-      date: "2025-01-14",
-    },
-    {
-      id: 3,
-      title: "Arung Jeram Sungai Timbukar",
-      category: "wisata",
-      description: "Petualangan seru di sungai dengan pemandangan indah",
-      image: "/images/placeholder.svg",
-      date: "2025-01-13",
-    },
-    {
-      id: 4,
-      title: "Acara Gotong Royong",
-      category: "acara",
-      description:
-        "Kebersamaan masyarakat dalam kegiatan pembersihan jalan desa",
-      image: "/images/placeholder.svg",
-      date: "2025-01-12",
-    },
-    {
-      id: 5,
-      title: "Pelatihan UMKM",
-      category: "kegiatan",
-      description: "Program pemberdayaan usaha kecil menengah desa",
-      image: "/images/placeholder.svg",
-      date: "2025-01-11",
-    },
-    {
-      id: 6,
-      title: "Pembangunan Jalan",
-      category: "infrastruktur",
-      description: "Progres pembangunan infrastruktur jalan desa",
-      image: "/images/placeholder.svg",
-      date: "2025-01-10",
-    },
-    {
-      id: 7,
-      title: "Perayaan HUT Desa",
-      category: "acara",
-      description: "Meriah perayaan hari ulang tahun Desa Timbukar",
-      image: "/images/placeholder.svg",
-      date: "2025-01-09",
-    },
-    {
-      id: 8,
-      title: "Pemeliharaan Jembatan",
-      category: "infrastruktur",
-      description: "Tim maintenance melakukan perbaikan jembatan desa",
-      image: "/images/placeholder.svg",
-      date: "2025-01-08",
-    },
-    {
-      id: 9,
-      title: "Pelatihan Pariwisata",
-      category: "kegiatan",
-      description: "Sosialisasi pengembangan desa wisata untuk masyarakat",
-      image: "/images/placeholder.svg",
-      date: "2025-01-07",
-    },
-  ];
+  const [galeriData, setGaleriData] = useState<GaleriItem[]>([]);
+  const [filteredData, setFilteredData] = useState<GaleriItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>("semua");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedImage, setSelectedImage] = useState<{
+    src: string;
+    judul: string;
+  } | null>(null);
 
   const categories = [
-    { id: "semua", label: "Semua Foto", icon: "📷" },
-    { id: "wisata", label: "Wisata", icon: "🏞️" },
-    { id: "acara", label: "Acara", icon: "🎉" },
-    { id: "kegiatan", label: "Kegiatan", icon: "🤝" },
-    { id: "infrastruktur", label: "Infrastruktur", icon: "🏗️" },
+    { id: "semua", label: "Semua Kategori" },
+    { id: "Wisata", label: "Wisata" },
+    { id: "Acara", label: "Acara" },
+    { id: "Kegiatan", label: "Kegiatan" },
+    { id: "Infrastruktur", label: "Infrastruktur" },
+    { id: "KKT UNSRAT", label: "KKT UNSRAT" },
   ];
 
-  // Filter galeri
-  const filteredGaleri = galeriData.filter((item) => {
-    const matchCategory =
-      selectedCategory === "semua" || item.category === selectedCategory;
-    const matchSearch =
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCategory && matchSearch;
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/galeri");
+
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.status}`);
+        }
+
+        const result: ApiResponse = await response.json();
+        const data = Array.isArray(result.data) ? result.data : [];
+        setGaleriData(data);
+        setFilteredData(data);
+      } catch (error) {
+        const msg =
+          error instanceof Error ? error.message : "Gagal memuat galeri";
+        console.error("Fetch error:", msg);
+        showToast.error(msg);
+        setGaleriData([]);
+        setFilteredData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    let filtered = galeriData;
+
+    if (selectedCategory !== "semua") {
+      filtered = filtered.filter(
+        (item) => item.kategori.toLowerCase() === selectedCategory.toLowerCase()
+      );
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (item) =>
+          item.judul.toLowerCase().includes(query) ||
+          item.deskripsi.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredData(filtered);
+  }, [selectedCategory, searchQuery, galeriData]);
+
+  const getImageUrl = (imagePath: string | null | undefined): string => {
+    if (!imagePath) return "/images/placeholder.svg";
+    // Jika sudah full URL (http/https), kembalikan as-is
+    if (imagePath.startsWith("http")) return imagePath;
+    // Jika sudah path absolut dari Next.js API (/uploads/...), kembalikan as-is
+    if (imagePath.startsWith("/uploads/")) return imagePath;
+    if (imagePath.startsWith("/images/")) return imagePath;
+    // Fallback: anggap sebagai nama file, transform to /images/galeri/...
+    return `/images/galeri/${imagePath}`;
+  };
 
   return (
-    <>
-      <PageLayout
-        heroTitle="Galeri Desa"
-        heroSubtitle="Koleksi foto keindahan alam dan kegiatan Desa Timbukar"
-        currentPage="galeri"
-        includeFooter={false}
-      >
-        {/* Search Bar */}
-        <div className="mb-8 sm:mb-12">
-          <div className="relative">
-            <Search
-              className="absolute left-4 top-3.5 text-gray-400"
-              size={20}
-            />
+    <PageLayout
+      currentPage="galeri"
+      heroTitle="Galeri Desa Timbukar"
+      heroSubtitle="Jelajahi keindahan dan kegiatan masyarakat Desa Timbukar"
+    >
+      <div className="py-16">
+        <div className="max-w-6xl mx-auto px-4">
+          {/* Search */}
+          <div className="mb-8">
             <input
               type="text"
-              placeholder="Cari foto galeri..."
+              placeholder="Cari galeri..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600 transition-colors text-sm sm:text-base"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
             />
           </div>
-        </div>
 
-        {/* Filter Category */}
-        <div className="mb-8 sm:mb-12">
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
-            Kategori
-          </h3>
-          <div className="flex flex-wrap gap-2 sm:gap-4">
+          {/* Category Filter */}
+          <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
             {categories.map((cat) => (
               <button
                 key={cat.id}
-                onClick={() => {
-                  setSelectedCategory(cat.id);
-                  setSearchQuery("");
-                }}
-                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all text-xs sm:text-sm ${
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
                   selectedCategory === cat.id
-                    ? "bg-emerald-600 text-white shadow-lg"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-emerald-600 text-white"
+                    : "bg-gray-200 text-gray-800 hover:bg-gray-300"
                 }`}
               >
-                <span className="mr-2">{cat.icon}</span>
                 {cat.label}
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Gallery Grid */}
-        <div className="mb-12 sm:mb-16">
-          {filteredGaleri.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {filteredGaleri.map((item) => (
+          {/* Loading */}
+          {loading && (
+            <div className="flex items-center justify-center py-16">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+            </div>
+          )}
+
+          {/* Gallery Grid */}
+          {!loading && filteredData.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredData.map((galeri) => (
                 <div
-                  key={item.id}
-                  className="group cursor-pointer section-box-blue"
-                  onClick={() => setSelectedImage(item.image)}
+                  key={galeri.id}
+                  className="bg-white rounded-lg shadow-lg hover:shadow-xl overflow-hidden transition-all duration-300 group cursor-pointer"
+                  onClick={() =>
+                    setSelectedImage({
+                      src: getImageUrl(galeri.gambar),
+                      judul: galeri.judul,
+                    })
+                  }
                 >
-                  <div className="relative h-56 sm:h-64 bg-gray-200 rounded-lg overflow-hidden mb-4 -m-4 sm:-m-6">
+                  <div className="relative h-80 overflow-hidden bg-gray-200">
                     <Image
-                      src={item.image}
-                      alt={item.title}
+                      src={getImageUrl(galeri.gambar)}
+                      alt={galeri.judul}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="object-contain group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
-                      <Grid3x3
-                        size={32}
-                        className="text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                      />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300" />
+                    <div className="absolute top-3 right-3 bg-emerald-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                      {categories.find(
+                        (c) =>
+                          c.id.toLowerCase() ===
+                          (galeri.kategori?.toLowerCase() || "")
+                      )?.label || galeri.kategori}
                     </div>
                   </div>
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-600 mb-2">
-                    {item.description}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(item.date).toLocaleDateString("id-ID", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
+
+                  <div className="p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                      {galeri.judul}
+                    </h3>
+                    <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                      {galeri.deskripsi}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(galeri.created_at).toLocaleDateString("id-ID")}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-20">
-              <p className="text-base sm:text-lg text-gray-600">
-                Tidak ada foto yang sesuai dengan pencarian Anda.
+          )}
+
+          {/* Empty State */}
+          {!loading && filteredData.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-lg text-gray-500">
+                {galeriData.length === 0
+                  ? "Belum ada galeri yang tersedia"
+                  : "Tidak ada galeri yang cocok dengan pencarian Anda"}
               </p>
             </div>
           )}
         </div>
+      </div>
 
-        {/* Info Box */}
-        <div className="section-box-blue">
-          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
-            📸 Kontribusi Foto
-          </h3>
-          <p className="text-gray-700 mb-4 text-sm sm:text-base">
-            Anda memiliki foto menarik dari Desa Timbukar? Kami senang menerima
-            kontribusi foto untuk galeri desa kami.
-          </p>
-          <div className="space-y-2 text-xs sm:text-sm text-gray-600">
-            <p>
-              📧 Kirim foto Anda ke: <strong>infodesatimbukar@gmail.com</strong>
-            </p>
-            <p>
-              📞 Hubungi: <strong>081340798030</strong>
-            </p>
-            <p>✨ Sertakan judul, deskripsi, dan tanggal pengambilan foto</p>
-          </div>
-        </div>
-      </PageLayout>
-
-      {/* Lightbox/Modal */}
+      {/* Lightbox Modal */}
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
           onClick={() => setSelectedImage(null)}
         >
-          <div className="relative max-w-4xl w-full">
-            <Image
-              src={selectedImage}
-              alt="Gallery image"
-              width={800}
-              height={600}
-              className="w-full h-auto rounded-lg"
-            />
+          <div
+            className="relative max-w-4xl w-full max-h-screen flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-200 transition-colors"
+              className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-200 transition-colors z-10"
             >
-              <X size={24} className="text-gray-900" />
+              <X size={28} className="text-gray-900" />
             </button>
+
+            {/* Image */}
+            <div className="relative w-full h-screen max-h-[85vh] bg-black">
+              <Image
+                src={selectedImage.src}
+                alt={selectedImage.judul}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Title */}
+            <div className="bg-white p-6">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {selectedImage.judul}
+              </h2>
+            </div>
           </div>
         </div>
       )}
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">DESA TIMBUKAR</h3>
-              <p className="text-gray-400 text-sm sm:text-base">
-                Website resmi Desa Timbukar, Kecamatan Sonder, Kabupaten
-                Minahasa
-              </p>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Menu</h4>
-              <div className="space-y-2">
-                <a
-                  href="/"
-                  className="block text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  Home
-                </a>
-                <a
-                  href="/profil"
-                  className="block text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  Profil Desa
-                </a>
-                <a
-                  href="/galeri"
-                  className="block text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  Galeri
-                </a>
-                <a
-                  href="/kontak"
-                  className="block text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  Contact
-                </a>
-              </div>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Kontak</h4>
-              <div className="space-y-2 text-gray-400 text-sm">
-                <p>📞 081340798030</p>
-                <p>📧 infodesatimbukar@gmail.com</p>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
-            <p>&copy; 2025 Desa Timbukar. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
-    </>
+    </PageLayout>
   );
 }
