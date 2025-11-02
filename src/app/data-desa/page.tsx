@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import PageLayout from "@/components/PageLayout";
 import Card, { StatsCard } from "@/components/Card";
 import {
@@ -65,75 +65,78 @@ export default function DataDesaPage() {
   const [dataDesa, setDataDesa] = useState<DataDesa | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    try {
-      const API_BASE_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-      const response = await fetch(`${API_BASE_URL}/data-desa`);
-      if (!response.ok) throw new Error("Failed to fetch");
-      const result = await response.json();
-
-      // Backend sudah transform data sesuai format frontend
-      // Gunakan data langsung dari API
-      const mappedData: DataDesa = {
-        statistics: result.data.statistics,
-        demographics: result.data.demographics,
-        gender: result.data.gender,
-        education: result.data.education,
-        religion: result.data.religion,
-      };
-
-      setDataDesa(mappedData);
-    } catch (err) {
-      console.error("Error loading data:", err);
-      // Gunakan data default jika API gagal
-      setDataDesa(defaultData);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Default data jika API tidak tersedia
-  const defaultData: DataDesa = {
-    statistics: {
-      populasi: "2,500",
-      kepala_keluarga: "625",
-      luas_wilayah: "45.5 km²",
-      angka_pertumbuhan: "2.5%",
-      jumlah_bayi: "180",
-      angka_harapan_hidup: "72 Tahun",
-    },
-    demographics: [
-      { kategori_usia: "Usia 0-5 Tahun", persentase: "8%", jumlah: "200" },
-      { kategori_usia: "Usia 5-15 Tahun", persentase: "15%", jumlah: "375" },
-      { kategori_usia: "Usia 15-65 Tahun", persentase: "68%", jumlah: "1,700" },
-      { kategori_usia: "Usia 65+ Tahun", persentase: "9%", jumlah: "225" },
-    ],
-    gender: [
-      { jenis_kelamin: "Laki-laki", jumlah: "1,275", persentase: "51%" },
-      { jenis_kelamin: "Perempuan", jumlah: "1,225", persentase: "49%" },
-    ],
-    education: [
-      { tingkat_pendidikan: "Tidak Sekolah", jumlah: "125", persentase: "5%" },
-      { tingkat_pendidikan: "SD/Sederajat", jumlah: "625", persentase: "25%" },
-      { tingkat_pendidikan: "SMP/Sederajat", jumlah: "750", persentase: "30%" },
-      { tingkat_pendidikan: "SMA/Sederajat", jumlah: "700", persentase: "28%" },
-      { tingkat_pendidikan: "D1/D2/D3", jumlah: "150", persentase: "6%" },
-      { tingkat_pendidikan: "S1/S2/S3", jumlah: "175", persentase: "7%" },
-    ],
-    religion: [
-      { agama: "Islam", jumlah: "2,000", persentase: "80%" },
-      { agama: "Kristen", jumlah: "300", persentase: "12%" },
-      { agama: "Katolik", jumlah: "100", persentase: "4%" },
-      { agama: "Hindu", jumlah: "50", persentase: "2%" },
-      { agama: "Buddha", jumlah: "30", persentase: "1.2%" },
-      { agama: "Lainnya", jumlah: "20", persentase: "0.8%" },
-    ],
-  };
+  const defaultData = useMemo(
+    () => ({
+      statistics: {
+        populasi: "2,500",
+        kepala_keluarga: "625",
+        luas_wilayah: "45.5 km²",
+        angka_pertumbuhan: "2.5%",
+        jumlah_bayi: "180",
+        angka_harapan_hidup: "72 Tahun",
+      },
+      demographics: [
+        { kategori_usia: "Usia 0-5 Tahun", persentase: "8%", jumlah: "200" },
+        { kategori_usia: "Usia 5-15 Tahun", persentase: "15%", jumlah: "375" },
+        { kategori_usia: "Usia 15-65 Tahun", persentase: "68%", jumlah: "1,700" },
+        { kategori_usia: "Usia 65+ Tahun", persentase: "9%", jumlah: "225" },
+      ],
+      gender: [
+        { jenis_kelamin: "Laki-laki", jumlah: "1,275", persentase: "51%" },
+        { jenis_kelamin: "Perempuan", jumlah: "1,225", persentase: "49%" },
+      ],
+      education: [
+        { tingkat_pendidikan: "Tidak Sekolah", jumlah: "125", persentase: "5%" },
+        { tingkat_pendidikan: "SD/Sederajat", jumlah: "625", persentase: "25%" },
+        { tingkat_pendidikan: "SMP/Sederajat", jumlah: "750", persentase: "30%" },
+        { tingkat_pendidikan: "SMA/Sederajat", jumlah: "700", persentase: "28%" },
+        { tingkat_pendidikan: "D1/D2/D3", jumlah: "150", persentase: "6%" },
+        { tingkat_pendidikan: "S1/S2/S3", jumlah: "175", persentase: "7%" },
+      ],
+      religion: [
+        { agama: "Islam", jumlah: "2,000", persentase: "80%" },
+        { agama: "Kristen", jumlah: "300", persentase: "12%" },
+        { agama: "Katolik", jumlah: "100", persentase: "4%" },
+        { agama: "Hindu", jumlah: "50", persentase: "2%" },
+        { agama: "Buddha", jumlah: "30", persentase: "1.2%" },
+        { agama: "Lainnya", jumlah: "20", persentase: "0.8%" },
+      ],
+    } as DataDesa),
+    []
+  );
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const API_BASE_URL =
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+        const response = await fetch(`${API_BASE_URL}/data-desa`);
+        if (!response.ok) throw new Error("Failed to fetch");
+        const result = await response.json();
+
+        // Backend sudah transform data sesuai format frontend
+        // Gunakan data langsung dari API
+        const mappedData: DataDesa = {
+          statistics: result.data.statistics,
+          demographics: result.data.demographics,
+          gender: result.data.gender,
+          education: result.data.education,
+          religion: result.data.religion,
+        };
+
+        setDataDesa(mappedData);
+      } catch (err) {
+        console.error("Error loading data:", err);
+        // Gunakan data default jika API gagal
+        setDataDesa(defaultData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [defaultData]);
 
   // Helper function untuk menghitung persentase dari jumlah
   const calculatePercentage = (jumlah: string, total: string): string => {

@@ -5,10 +5,10 @@ const BACKEND_API_URL =
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const authHeader = request.headers.get("authorization");
 
@@ -34,10 +34,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const authHeader = request.headers.get("authorization");
 
     const response = await fetch(`${BACKEND_API_URL}/kontak/${id}`, {

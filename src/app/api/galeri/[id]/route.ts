@@ -5,10 +5,10 @@ const BACKEND_API_URL =
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const response = await fetch(`${BACKEND_API_URL}/galeri/${id}`, {
       method: "GET",
       headers: {
@@ -29,10 +29,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const token = request.headers.get("authorization");
 
@@ -61,10 +61,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const token = request.headers.get("authorization");
 
     const response = await fetch(`${BACKEND_API_URL}/galeri/${id}`, {

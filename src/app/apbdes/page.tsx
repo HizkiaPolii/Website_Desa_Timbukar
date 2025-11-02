@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import PageLayout from "@/components/PageLayout";
 import { apbdesApi } from "@/services/apbdesApi";
 import { ChevronDown } from "lucide-react";
@@ -299,9 +300,10 @@ export default function ApbdesPage() {
                   className="relative w-full bg-gray-100 flex items-center justify-center min-h-96 cursor-pointer hover:opacity-90 transition"
                   onClick={() => setIsModalOpen(true)}
                 >
-                  <img
+                  <Image
                     src={apbdesData.file_dokumen}
                     alt={`APBDES ${apbdesData.tahun}`}
+                    fill
                     className="w-full h-auto object-contain"
                   />
                   <div className="p-6 bg-gradient-to-t from-black/40 to-transparent absolute bottom-0 w-full">
@@ -349,9 +351,11 @@ export default function ApbdesPage() {
 
                 {/* Image Container */}
                 <div className="bg-black rounded-lg overflow-hidden flex items-center justify-center">
-                  <img
+                  <Image
                     src={apbdesData.file_dokumen}
                     alt={`APBDES ${apbdesData.tahun}`}
+                    width={800}
+                    height={600}
                     className="w-full h-auto max-h-[80vh] object-contain"
                   />
                 </div>

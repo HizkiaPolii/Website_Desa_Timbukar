@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Save } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { showToast } from "@/utils/toast";
 import { apbdesApi } from "@/services/apbdesApi";
 
@@ -188,7 +189,7 @@ export default function AdminApbdesPage() {
         pendapatan: pendapatanAmount,
         belanja: belanjaAmount,
         pembiayaan: pembiayaanAmount,
-        file_dokumen: formData.file_dokumen || null,
+        file_dokumen: formData.file_dokumen || undefined,
       };
 
       if (apbdesData?.id) {
@@ -383,10 +384,11 @@ export default function AdminApbdesPage() {
                     </div>
                     {formData.file_dokumen && (
                       <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-emerald-200 bg-gray-50">
-                        <img
+                        <Image
                           src={formData.file_dokumen}
                           alt="Preview"
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
                         />
                         <button
                           type="button"

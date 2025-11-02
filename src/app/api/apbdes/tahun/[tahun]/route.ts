@@ -5,10 +5,10 @@ const API_BASE_URL =
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { tahun: string } }
+  { params }: { params: Promise<{ tahun: string }> }
 ) {
   try {
-    const { tahun } = params;
+    const { tahun } = await params;
     const response = await fetch(`${API_BASE_URL}/apbdes/tahun/${tahun}`, {
       method: "GET",
       headers: {
