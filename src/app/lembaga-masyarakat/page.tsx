@@ -24,7 +24,7 @@ export default function LembagaMasyarakatPage() {
     const fetchData = async () => {
       try {
         const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
         const response = await fetch(`${apiUrl}/lembaga-masyarakat`);
         if (!response.ok) throw new Error("Gagal mengambil data");
         const result = await response.json();

@@ -122,7 +122,7 @@ export default function DataDesaAdminPage() {
     try {
       setLoading(true);
       const API_BASE_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
       const response = await fetch(`${API_BASE_URL}/data-desa`);
       if (!response.ok) throw new Error("Failed to fetch");
       const result = await response.json();
@@ -219,7 +219,7 @@ export default function DataDesaAdminPage() {
       setSuccess("");
 
       const API_BASE_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
 
       // Simpan setiap kategori dengan individual POST calls
       // Format: POST /data-desa dengan { kategori: "...", ...data }
