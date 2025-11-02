@@ -63,9 +63,7 @@ export default function DesaTimbukar() {
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 drop-shadow-2xl">
               Selamat Datang di
-              <span className="block text-emerald-300 mt-2">
-                Desa Timbukar
-              </span>
+              <span className="block text-emerald-300 mt-2">Desa Timbukar</span>
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-white mb-10 leading-relaxed drop-shadow-lg">
               Melalui website ini Anda dapat menjelajahi segala hal yang terkait
@@ -150,32 +148,70 @@ export default function DesaTimbukar() {
           </div>
 
           <div className="grid-responsive gap-6 sm:gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} hover className="overflow-hidden">
-                <div className="h-40 sm:h-48 bg-gradient-to-br from-emerald-100 to-blue-100 flex items-center justify-center">
-                  <span className="text-6xl sm:text-7xl">{feature.image}</span>
-                </div>
-                <div className="p-4 sm:p-6">
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm sm:text-base text-gray-600">{feature.description}</p>
-                </div>
-              </Card>
-            ))}
+            {features.map((feature, index) => {
+              // Links for specific locations
+              const isAirTerjun = feature.title === "Air Terjun 3 Tingkat";
+              const isHomestay = feature.title === "Homestay Timbukar";
+              const isArunJeram = feature.title === "Wisata Arung Jeram";
+
+              let mapsLink = null;
+              if (isAirTerjun) {
+                mapsLink = "https://maps.app.goo.gl/ptMrQAuS6Xr89dRMA";
+              } else if (isHomestay) {
+                mapsLink = "https://maps.app.goo.gl/pnfF9RXidpj5p2n8A";
+              } else if (isArunJeram) {
+                mapsLink = "https://maps.app.goo.gl/TGCZmGeCaAUgC4SN7";
+              }
+
+              return (
+                <Card
+                  key={index}
+                  hover
+                  className="overflow-hidden flex flex-col"
+                >
+                  <div className="h-40 sm:h-48 bg-gradient-to-br from-emerald-100 to-blue-100 flex items-center justify-center">
+                    <span className="text-6xl sm:text-7xl">
+                      {feature.image}
+                    </span>
+                  </div>
+                  <div className="p-4 sm:p-6 flex flex-col flex-grow">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm sm:text-base text-gray-600 mb-4 flex-grow">
+                      {feature.description}
+                    </p>
+                    {mapsLink && (
+                      <a
+                        href={mapsLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-colors w-fit"
+                      >
+                        Lihat Lokasi 🗺️
+                      </a>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Galeri Section */}
-      <section id="galeri" className="section-padding bg-gradient-to-br from-emerald-50 to-white">
+      <section
+        id="galeri"
+        className="section-padding bg-gradient-to-br from-emerald-50 to-white"
+      >
         <div className="container-main">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="title-section text-emerald-600 mb-4">
               Galeri Desa Timbukar
             </h2>
             <p className="subtitle-section max-w-2xl mx-auto">
-              Jelajahi keindahan dan aktivitas kehidupan di Desa Timbukar melalui galeri foto kami
+              Jelajahi keindahan dan aktivitas kehidupan di Desa Timbukar
+              melalui galeri foto kami
             </p>
           </div>
 
@@ -221,13 +257,17 @@ export default function DesaTimbukar() {
               </div>
             </div>
             <Card className="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-8 sm:p-12">
-              <h3 className="text-xl sm:text-2xl font-bold mb-6">Informasi Kontak</h3>
+              <h3 className="text-xl sm:text-2xl font-bold mb-6">
+                Informasi Kontak
+              </h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <Phone size={20} className="mt-1 flex-shrink-0" />
                   <div>
                     <p className="font-medium text-sm sm:text-base">Telepon</p>
-                    <p className="text-emerald-100 text-sm sm:text-base">081340798030</p>
+                    <p className="text-emerald-100 text-sm sm:text-base">
+                      081340798030
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

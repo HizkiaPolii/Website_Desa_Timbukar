@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Menu, X, LogOut } from "lucide-react";
 
 interface NavProps {
@@ -152,8 +153,14 @@ export default function Navigation({ currentPage = "home" }: NavProps) {
         <div className="max-w-full px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="flex justify-between items-center py-2 sm:py-3">
             <Link href="/" className="flex items-center gap-2 lg:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-lg flex items-center justify-center text-emerald-600 font-bold text-xs sm:text-base shadow-sm">
-                DT
+              <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+                <Image
+                  src="/images/logo.png"
+                  alt="Logo Desa Timbukar"
+                  width={48}
+                  height={48}
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-xs sm:text-base md:text-lg font-bold text-white leading-tight">
