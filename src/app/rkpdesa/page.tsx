@@ -30,7 +30,8 @@ export default function RKPDESA() {
 
         // Fetch from backend API
         const apiUrl =
-          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+          process.env.NEXT_PUBLIC_API_BASE_URL ||
+          "https://api.desatimbukar.id/api";
         const response = await fetch(`${apiUrl}/rkpdesa`, {
           method: "GET",
           headers: {
@@ -166,12 +167,15 @@ export default function RKPDESA() {
                             Diperbarui
                           </p>
                           <p className="text-lg font-semibold text-blue-900">
-                            {new Date(item.updatedAt).toLocaleDateString("id-ID", {
-                              weekday: "long",
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
+                            {new Date(item.updatedAt).toLocaleDateString(
+                              "id-ID",
+                              {
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )}
                           </p>
                         </div>
                       </div>
@@ -194,8 +198,8 @@ export default function RKPDESA() {
                     {/* Kolom Kanan - Preview PDF */}
                     {item.fileDokumen && (
                       <div className="lg:col-span-2">
-                        <PDFPreview 
-                          fileUrl={item.fileDokumen} 
+                        <PDFPreview
+                          fileUrl={item.fileDokumen}
                           fileName={item.judul}
                         />
                       </div>

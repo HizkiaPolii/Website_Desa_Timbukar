@@ -41,7 +41,10 @@ export default function EditBumdesPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5000/api/bumdes");
+        const API_URL =
+          process.env.NEXT_PUBLIC_API_BASE_URL ||
+          "https://api.desatimbukar.id/api";
+        const response = await fetch(`${API_URL}/bumdes`);
 
         if (!response.ok) {
           console.error("API Error:", response.status, response.statusText);
@@ -111,9 +114,12 @@ export default function EditBumdesPage() {
     try {
       const isNewRecord = editingId === -1;
       const method = isNewRecord ? "POST" : "PUT";
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://api.desatimbukar.id/api";
       const url = isNewRecord
-        ? "http://localhost:5000/api/bumdes"
-        : `http://localhost:5000/api/bumdes/${editingId}`;
+        ? `${API_URL}/bumdes`
+        : `${API_URL}/bumdes/${editingId}`;
 
       // Bersihkan data: hanya kirim field yang valid, tidak null/undefined
       const cleanData = Object.entries(editFormData).reduce(
@@ -165,11 +171,11 @@ export default function EditBumdesPage() {
           const errorData = await response.json();
           fullErrorData = errorData;
           errorMessage =
-            errorData.message || 
-            errorData.error || 
+            errorData.message ||
+            errorData.error ||
             errorData.msg ||
             JSON.stringify(errorData);
-          
+
           console.error("Backend error response (JSON):", {
             status: response.status,
             statusText: response.statusText,
@@ -231,15 +237,15 @@ export default function EditBumdesPage() {
         }
 
         try {
-          const response = await fetch(
-            `http://localhost:5000/api/bumdes/${id}`,
-            {
-              method: "DELETE",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const API_URL =
+            process.env.NEXT_PUBLIC_API_BASE_URL ||
+            "https://api.desatimbukar.id/api";
+          const response = await fetch(`${API_URL}/bumdes/${id}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           if (!response.ok) throw new Error("Gagal menghapus");
 
           setBumdesData(bumdesData.filter((b) => b.id !== id));

@@ -63,7 +63,7 @@ export default function EditPemerintahanDesaPage() {
     } catch (error) {
       showNotification(
         "error",
-        "Gagal memuat data. Pastikan backend server running di http://localhost:5000"
+        "Gagal memuat data. Pastikan backend server running di https://api.desatimbukar.id/api"
       );
       console.error("Fetch error:", error);
       setPegawaiList([]);

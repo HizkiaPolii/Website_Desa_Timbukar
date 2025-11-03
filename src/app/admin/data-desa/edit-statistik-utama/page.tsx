@@ -37,7 +37,8 @@ export default function EditStatistikUtamaPage() {
     try {
       setLoading(true);
       const API_BASE_URL =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://api.desatimbukar.id/api";
       const res = await fetch(`${API_BASE_URL}/data-desa`);
       if (!res.ok) throw new Error("Failed to fetch");
       const json = await res.json();
@@ -69,7 +70,8 @@ export default function EditStatistikUtamaPage() {
       setSaving(true);
       setError("");
       const API_BASE_URL =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://api.desatimbukar.id/api";
 
       // Validasi ID sebelum save
       if (!data.id) {

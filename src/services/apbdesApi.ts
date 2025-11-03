@@ -36,13 +36,13 @@ export interface UpdateApbdesInput {
  * API Base URL Configuration
  *
  * Ubah sesuai dengan lokasi backend Anda di .env.local:
- * NEXT_PUBLIC_API_URL=http://localhost:5000/api
+ * NEXT_PUBLIC_API_URL=https://api.desatimbukar.id/api
  *
- * Maka API_BASE_URL akan menjadi: http://localhost:5000/api/apbdes
+ * Maka API_BASE_URL akan menjadi: https://api.desatimbukar.id/api/apbdes
  */
 const getApiBaseUrl = (): string => {
   const baseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+    process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.desatimbukar.id/api";
   return `${baseUrl}/apbdes`;
 };
 

@@ -1,4 +1,5 @@
-const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.desatimbukar.id/api";
 
 export interface LembagaMasyarakat {
   id: number;

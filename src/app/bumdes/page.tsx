@@ -27,7 +27,8 @@ export default function BumdesPage() {
       try {
         setLoading(true);
         const apiUrl =
-          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+          process.env.NEXT_PUBLIC_API_BASE_URL ||
+          "https://api.desatimbukar.id/api";
         const response = await fetch(`${apiUrl}/bumdes`);
 
         if (!response.ok) {
@@ -112,13 +113,12 @@ export default function BumdesPage() {
           };
 
           return (
-            <div 
-              key={bumdes.id} 
+            <div
+              key={bumdes.id}
               className={`${bgColorMap[color]} shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden rounded-xl`}
             >
               {/* Layout: Deskripsi Kiri, Gambar Kanan */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 p-6 sm:p-8 lg:p-10">
-                
                 {/* Konten Kiri - Deskripsi */}
                 <div className="flex flex-col justify-center">
                   {/* Nama BUMDES - Sangat Besar */}
@@ -143,20 +143,32 @@ export default function BumdesPage() {
                   <div className="text-base sm:text-lg lg:text-xl text-gray-700 space-y-5">
                     {bumdes.pimpinan && (
                       <div className="flex flex-col">
-                        <span className="font-bold text-gray-900 mb-1">Pimpinan</span>
-                        <span className="text-gray-700 text-lg">{bumdes.pimpinan}</span>
+                        <span className="font-bold text-gray-900 mb-1">
+                          Pimpinan
+                        </span>
+                        <span className="text-gray-700 text-lg">
+                          {bumdes.pimpinan}
+                        </span>
                       </div>
                     )}
                     {bumdes.alamat && (
                       <div className="flex flex-col">
-                        <span className="font-bold text-gray-900 mb-1">Alamat</span>
-                        <span className="text-gray-700 text-lg">{bumdes.alamat}</span>
+                        <span className="font-bold text-gray-900 mb-1">
+                          Alamat
+                        </span>
+                        <span className="text-gray-700 text-lg">
+                          {bumdes.alamat}
+                        </span>
                       </div>
                     )}
                     {bumdes.no_telepon && (
                       <div className="flex flex-col">
-                        <span className="font-bold text-gray-900 mb-1">Telepon</span>
-                        <span className="text-gray-700 text-lg">{bumdes.no_telepon}</span>
+                        <span className="font-bold text-gray-900 mb-1">
+                          Telepon
+                        </span>
+                        <span className="text-gray-700 text-lg">
+                          {bumdes.no_telepon}
+                        </span>
                       </div>
                     )}
                   </div>

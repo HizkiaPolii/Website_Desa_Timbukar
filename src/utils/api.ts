@@ -1,5 +1,5 @@
 const API_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://82.153.226.232:5000/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.desatimbukar.id/api";
 
 interface LoginResponse {
   success: boolean;

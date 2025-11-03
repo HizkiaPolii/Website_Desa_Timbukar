@@ -223,7 +223,8 @@ export default function PemerintahanDesaPage() {
               <p className="text-sm font-medium text-amber-900">{error}</p>
               {useBackend === false && (
                 <p className="text-xs text-amber-800 mt-1">
-                  Pastikan backend server berjalan di http://localhost:5000
+                  Pastikan backend server berjalan di
+                  https://api.desatimbukar.id/api
                 </p>
               )}
             </div>
