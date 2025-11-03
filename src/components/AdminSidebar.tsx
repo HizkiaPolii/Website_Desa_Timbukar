@@ -124,13 +124,13 @@ export default function AdminSidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0  h-screen bg-gray-900 text-white transition-all duration-300 z-30 overflow-y-auto ${
+        className={`fixed left-0 top-0 h-screen bg-gray-900 text-white transition-all duration-300 z-30 overflow-y-auto ${
           isOpen ? "w-64" : "w-0"
         } md:w-64`}
       >
         <div className="p-4 md:p-6">
           {/* Sidebar Header */}
-          <div className="mb-8">
+          <div className="mb-8 mt-12 md:mt-0">
             <h2 className="text-xl font-bold text-emerald-400">Admin Panel</h2>
             <p className="text-xs text-gray-400 mt-1">Desa Timbukar</p>
           </div>
@@ -141,7 +141,8 @@ export default function AdminSidebar() {
             className="w-full flex items-center justify-center gap-2 px-4 py-2 mb-6 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 font-medium text-sm"
           >
             <ArrowLeft size={18} />
-            <span>Kembali ke Homepage</span>
+            <span className="hidden sm:inline">Kembali ke Homepage</span>
+            <span className="sm:hidden">Homepage</span>
           </Link>
 
           {/* Navigation Items */}

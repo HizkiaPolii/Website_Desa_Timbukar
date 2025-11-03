@@ -67,6 +67,14 @@ export default function Footer() {
             &copy; 2025 Desa Timbukar. Semua hak dilindungi. | Website
             Pemerintah Desa
           </p>
+          <div className="mt-4 p-3 sm:p-4 bg-gray-800 rounded-lg border border-gray-700">
+            <p className="text-sm sm:text-base font-semibold text-gray-200">
+              ©️ Hak Kekayaan Intelektual
+            </p>
+            <p className="text-xs sm:text-sm text-gray-300 mt-1">
+              Didesain dan disusun oleh Mahasiswa KKT 144 Unsrat Posko Timbukar
+            </p>
+          </div>
         </div>
       </div>
     </footer>

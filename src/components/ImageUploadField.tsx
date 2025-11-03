@@ -236,19 +236,19 @@ export default function ImageUploadField({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+          className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-colors ${
             isDragging
               ? "border-emerald-600 bg-emerald-50"
               : "border-gray-300 hover:border-emerald-500 hover:bg-gray-50"
           } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <Upload
-            size={32}
-            className={`mx-auto mb-3 ${
+            size={28}
+            className={`mx-auto mb-3 sm:mb-4 ${
               isDragging ? "text-emerald-600" : "text-gray-400"
             }`}
           />
-          <p className="text-sm font-medium text-gray-700 mb-1">
+          <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1">
             {isUploading ? "Mengunggah..." : placeholder}
           </p>
           <p className="text-xs text-gray-500">

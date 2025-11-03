@@ -44,11 +44,11 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="flex">
+    <>
       <AdminSidebar />
-      <main className="flex-1 md:ml-64 bg-gray-50 min-h-screen">
+      <main className="ml-0 md:ml-64 w-full md:w-auto bg-gray-50 min-h-screen pt-16 md:pt-0 overflow-y-auto">
         {children}
       </main>
-    </div>
+    </>
   );
 }

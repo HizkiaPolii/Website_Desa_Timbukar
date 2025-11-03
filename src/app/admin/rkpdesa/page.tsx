@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Edit, Save, X, AlertCircle } from "lucide-react";
-import AdminSidebar from "@/components/AdminSidebar";
 import PDFUploadField from "@/components/PDFUploadField";
 import {
   useRKPDesa,
@@ -172,19 +171,28 @@ export default function AdminRKPDESA() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <AdminSidebar />
-
-      <main className="flex-1 md:ml-64 pt-20 md:pt-0 p-4 md:p-8">
+    <main className="w-full bg-gray-100 min-h-screen pt-20 md:pt-0">
+      <div className="w-full px-4 sm:px-6 md:px-8 py-4 md:py-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Kelola RKPDESA
-            </h1>
-            <p className="text-gray-600">
-              Manage Rencana Kerja Pembangunan Desa
-            </p>
+          <div className="mb-6 md:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-xl md:text-3xl font-bold text-gray-900 mb-1">
+                Kelola RKPDESA
+              </h1>
+              <p className="text-xs md:text-sm text-gray-600">
+                Manage Rencana Kerja Pembangunan Desa
+              </p>
+            </div>
+            {!showForm && (
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="flex items-center justify-center gap-2 px-3 md:px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors whitespace-nowrap"
+              >
+                <Plus size={18} />
+                <span>Tambah RKPDESA</span>
+              </button>
+            )}
           </div>
 
           {/* Message Alert */}
@@ -203,9 +211,9 @@ export default function AdminRKPDESA() {
 
           {/* Form */}
           {showForm && (
-            <div className="mb-8 bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">
+            <div className="mb-6 md:mb-8 bg-white rounded-lg shadow-md p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+                <h2 className="text-base md:text-lg font-bold text-gray-900">
                   {editingId ? "Edit RKPDESA" : "Tambah RKPDESA Baru"}
                 </h2>
                 <button
@@ -217,9 +225,9 @@ export default function AdminRKPDESA() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                       Tahun *
                     </label>
                     <input
@@ -229,20 +237,20 @@ export default function AdminRKPDESA() {
                       onChange={handleInputChange}
                       min="1900"
                       max="2100"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                      className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                       Status
                     </label>
                     <select
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                      className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                     >
                       <option value="draft">Draft</option>
                       <option value="aktif">Aktif</option>
@@ -253,7 +261,7 @@ export default function AdminRKPDESA() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                     Judul *
                   </label>
                   <input
@@ -262,14 +270,14 @@ export default function AdminRKPDESA() {
                     value={formData.judul}
                     onChange={handleInputChange}
                     maxLength={200}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                     placeholder="Masukkan judul RKPDESA"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                     Deskripsi
                   </label>
                   <textarea
@@ -277,14 +285,14 @@ export default function AdminRKPDESA() {
                     value={formData.deskripsi}
                     onChange={handleInputChange}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 resize-none"
+                    className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 resize-none"
                     placeholder="Masukkan deskripsi RKPDESA"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                       Anggaran (Rp) *
                     </label>
                     <input
@@ -293,7 +301,7 @@ export default function AdminRKPDESA() {
                       value={formData.anggaran}
                       onChange={handleInputChange}
                       min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                      className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                       placeholder="0"
                       required
                     />
@@ -313,20 +321,20 @@ export default function AdminRKPDESA() {
                   </div>
                 </div>
 
-                <div className="flex gap-2 justify-end">
+                <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 justify-end pt-4">
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-3 md:px-4 py-2 text-xs md:text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 font-medium"
                   >
-                    <Save size={18} />
+                    <Save size={16} />
                     {loading ? "Menyimpan..." : "Simpan"}
                   </button>
                 </div>
@@ -336,46 +344,51 @@ export default function AdminRKPDESA() {
 
           {/* Table */}
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">Data RKPDESA</h2>
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-              >
-                <Plus size={18} />
-                Tambah Data
-              </button>
+            <div className="p-4 md:p-6 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <h2 className="text-base md:text-lg font-bold text-gray-900">
+                Data RKPDESA
+              </h2>
+              {showForm && (
+                <button
+                  onClick={() => setShowForm(!showForm)}
+                  className="flex items-center justify-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors whitespace-nowrap font-medium"
+                >
+                  <X size={16} />
+                  <span className="hidden sm:inline">Tutup Form</span>
+                  <span className="sm:hidden">Tutup</span>
+                </button>
+              )}
             </div>
 
             {loading ? (
-              <div className="p-6 text-center text-gray-500">
+              <div className="p-4 md:p-6 text-center text-sm md:text-base text-gray-500">
                 Memuat data...
               </div>
             ) : data.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
+              <div className="p-4 md:p-6 text-center text-sm md:text-base text-gray-500">
                 Tidak ada data RKPDESA
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full text-xs md:text-sm">
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="px-3 md:px-6 py-2 md:py-3 text-left font-semibold text-gray-900">
                         ID
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="px-3 md:px-6 py-2 md:py-3 text-left font-semibold text-gray-900">
                         Tahun
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="px-3 md:px-6 py-2 md:py-3 text-left font-semibold text-gray-900">
                         Judul
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="hidden sm:table-cell px-3 md:px-6 py-2 md:py-3 text-left font-semibold text-gray-900">
                         Anggaran
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="px-3 md:px-6 py-2 md:py-3 text-left font-semibold text-gray-900">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      <th className="px-3 md:px-6 py-2 md:py-3 text-center font-semibold text-gray-900">
                         Aksi
                       </th>
                     </tr>
@@ -386,21 +399,21 @@ export default function AdminRKPDESA() {
                         key={item.id}
                         className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
                       >
-                        <td className="px-6 py-3 text-sm text-gray-900">
+                        <td className="px-3 md:px-6 py-2 md:py-3 text-gray-900">
                           {item.id}
                         </td>
-                        <td className="px-6 py-3 text-sm text-gray-900">
+                        <td className="px-3 md:px-6 py-2 md:py-3 text-gray-900">
                           {item.tahun}
                         </td>
-                        <td className="px-6 py-3 text-sm text-gray-900">
+                        <td className="px-3 md:px-6 py-2 md:py-3 text-gray-900">
                           {item.judul}
                         </td>
-                        <td className="px-6 py-3 text-sm text-gray-900">
+                        <td className="hidden sm:table-cell px-3 md:px-6 py-2 md:py-3 text-gray-900">
                           Rp. {item.anggaran.toLocaleString("id-ID")}
                         </td>
-                        <td className="px-6 py-3 text-sm">
+                        <td className="px-3 md:px-6 py-2 md:py-3">
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            className={`px-2 md:px-3 py-1 rounded-full text-xs font-medium ${
                               item.status === "aktif"
                                 ? "bg-green-100 text-green-800"
                                 : item.status === "selesai"
@@ -413,18 +426,20 @@ export default function AdminRKPDESA() {
                             {item.status}
                           </span>
                         </td>
-                        <td className="px-6 py-3 text-sm flex items-center gap-2">
+                        <td className="px-3 md:px-6 py-2 md:py-3 flex items-center justify-center gap-1 md:gap-2">
                           <button
                             onClick={() => handleEdit(item)}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Edit"
                           >
-                            <Edit size={18} />
+                            <Edit size={16} />
                           </button>
                           <button
                             onClick={() => handleDelete(item.id)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Hapus"
                           >
-                            <Trash2 size={18} />
+                            <Trash2 size={16} />
                           </button>
                         </td>
                       </tr>
@@ -435,7 +450,7 @@ export default function AdminRKPDESA() {
             )}
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }

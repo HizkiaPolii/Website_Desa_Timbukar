@@ -338,6 +338,8 @@ export default function KontakDesa() {
           </div>
         </section>
       </main>
+
+      <Footer />
     </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Save, Plus, Trash2, Edit2 } from "lucide-react";
-import AdminSidebar from "@/components/AdminSidebar";
 import ImageUploadField from "@/components/ImageUploadField";
 import { showToast } from "@/utils/toast";
 
@@ -273,16 +272,14 @@ export default function EditBumdesPage() {
   }
 
   return (
-    <div className="flex">
-      <AdminSidebar />
-
-      <div className="flex-1 ml-0 md:ml-64 p-4 md:p-8">
+    <main className="w-full bg-gray-50 min-h-screen pt-20 md:pt-0">
+      <div className="flex-1 p-3 md:p-8">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
               Kelola BUMDES
             </h1>
-            <p className="text-gray-600">
+            <p className="text-xs md:text-base text-gray-600">
               Kelola data Badan Usaha Milik Desa Timbukar
             </p>
           </div>
@@ -290,18 +287,19 @@ export default function EditBumdesPage() {
           {editingId === null && bumdesData.length > 0 && (
             <button
               onClick={handleAddNew}
-              className="mb-8 flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold"
+              className="mb-6 md:mb-8 flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold text-sm md:text-base"
             >
               <Plus size={20} />
-              Tambah BUMDES Baru
+              <span className="hidden sm:inline">Tambah BUMDES Baru</span>
+              <span className="sm:hidden">Tambah</span>
             </button>
           )}
 
           {editingId === -1 && (
-            <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 mb-6">
-              <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-md border border-gray-200 p-3 md:p-6 mb-6">
+              <div className="space-y-4 md:space-y-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
                     Nama BUMDES <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -310,12 +308,12 @@ export default function EditBumdesPage() {
                     onChange={(e) =>
                       handleInputChange("nama_bumdes", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
                     Jenis Usaha <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -324,12 +322,12 @@ export default function EditBumdesPage() {
                     onChange={(e) =>
                       handleInputChange("jenis_usaha", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
                     Deskripsi <span className="text-red-500">*</span>
                   </label>
                   <textarea
@@ -338,12 +336,12 @@ export default function EditBumdesPage() {
                       handleInputChange("deskripsi", e.target.value)
                     }
                     rows={4}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
                     Alamat <span className="text-red-500">*</span>
                   </label>
                   <textarea
@@ -357,7 +355,7 @@ export default function EditBumdesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
                     Pimpinan
                   </label>
                   <input
@@ -366,12 +364,12 @@ export default function EditBumdesPage() {
                     onChange={(e) =>
                       handleInputChange("pimpinan", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
                     No Telepon
                   </label>
                   <input
@@ -380,7 +378,7 @@ export default function EditBumdesPage() {
                     onChange={(e) =>
                       handleInputChange("no_telepon", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                   />
                 </div>
 
@@ -392,11 +390,11 @@ export default function EditBumdesPage() {
                   uploadFolder="bumdes"
                 />
 
-                <div className="flex gap-3 pt-4 border-t border-gray-200">
+                <div className="flex flex-col-reverse sm:flex-row gap-2 md:gap-3 pt-4 md:pt-6 border-t border-gray-200">
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-gray-400 transition-colors font-semibold"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 md:px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-gray-400 transition-colors font-semibold text-sm md:text-base"
                   >
                     <Save size={18} />
                     {saving ? "Menyimpan..." : "Simpan"}
@@ -404,7 +402,7 @@ export default function EditBumdesPage() {
                   <button
                     onClick={handleCancel}
                     disabled={saving}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 transition-colors font-semibold"
+                    className="flex-1 px-3 md:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 transition-colors font-semibold text-sm md:text-base"
                   >
                     Batal
                   </button>
@@ -413,16 +411,16 @@ export default function EditBumdesPage() {
             </div>
           )}
 
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {bumdesData.map((bumdes) => (
               <div
                 key={bumdes.id}
-                className="bg-white rounded-lg shadow-md border border-gray-200 p-6"
+                className="bg-white rounded-lg shadow-md border border-gray-200 p-3 md:p-6"
               >
                 {editingId === bumdes.id ? (
-                  <div className="space-y-6">
+                  <div className="space-y-4 md:space-y-6">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
                         Nama BUMDES <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -431,12 +429,12 @@ export default function EditBumdesPage() {
                         onChange={(e) =>
                           handleInputChange("nama_bumdes", e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
                         Jenis Usaha <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -445,12 +443,12 @@ export default function EditBumdesPage() {
                         onChange={(e) =>
                           handleInputChange("jenis_usaha", e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
                         Deskripsi <span className="text-red-500">*</span>
                       </label>
                       <textarea
@@ -459,12 +457,12 @@ export default function EditBumdesPage() {
                           handleInputChange("deskripsi", e.target.value)
                         }
                         rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
                         Alamat <span className="text-red-500">*</span>
                       </label>
                       <textarea
@@ -473,12 +471,12 @@ export default function EditBumdesPage() {
                           handleInputChange("alamat", e.target.value)
                         }
                         rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
                         Pimpinan
                       </label>
                       <input
@@ -487,12 +485,12 @@ export default function EditBumdesPage() {
                         onChange={(e) =>
                           handleInputChange("pimpinan", e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">
                         No Telepon
                       </label>
                       <input
@@ -501,7 +499,7 @@ export default function EditBumdesPage() {
                         onChange={(e) =>
                           handleInputChange("no_telepon", e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                       />
                     </div>
 
@@ -515,44 +513,44 @@ export default function EditBumdesPage() {
                       uploadFolder="bumdes"
                     />
 
-                    <div className="flex gap-3 pt-4 border-t border-gray-200">
+                    <div className="flex flex-col-reverse sm:flex-row gap-2 md:gap-3 pt-4 md:pt-6 border-t border-gray-200">
+                      <button
+                        onClick={handleCancel}
+                        disabled={saving}
+                        className="flex-1 px-3 md:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 transition-colors font-semibold text-sm md:text-base"
+                      >
+                        Batal
+                      </button>
                       <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-gray-400 transition-colors font-semibold"
+                        className="flex-1 flex items-center justify-center gap-2 px-3 md:px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-gray-400 transition-colors font-semibold text-sm md:text-base"
                       >
                         <Save size={18} />
                         {saving ? "Menyimpan..." : "Simpan"}
                       </button>
-                      <button
-                        onClick={handleCancel}
-                        disabled={saving}
-                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 transition-colors font-semibold"
-                      >
-                        Batal
-                      </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
                         {bumdes.nama_bumdes}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-3">
+                      <p className="text-xs md:text-sm text-gray-600 mb-2 md:mb-3">
                         <strong>Jenis Usaha:</strong> {bumdes.jenis_usaha}
                       </p>
-                      <p className="text-gray-700 mb-3 text-sm">
+                      <p className="text-xs md:text-sm text-gray-700 mb-2 md:mb-3 line-clamp-2">
                         {bumdes.deskripsi}
                       </p>
-                      <div className="text-sm text-gray-600 space-y-1">
+                      <div className="text-xs md:text-sm text-gray-600 space-y-1">
                         {bumdes.pimpinan && (
                           <p>
                             <strong>Pimpinan:</strong> {bumdes.pimpinan}
                           </p>
                         )}
                         {bumdes.alamat && (
-                          <p>
+                          <p className="line-clamp-2">
                             <strong>Alamat:</strong> {bumdes.alamat}
                           </p>
                         )}
@@ -564,14 +562,14 @@ export default function EditBumdesPage() {
                       </div>
                     </div>
 
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex gap-1 md:gap-2 flex-shrink-0">
                       <button
                         onClick={() => handleEdit(bumdes)}
                         disabled={editingId !== null}
                         className="p-2 text-emerald-600 hover:bg-emerald-100 disabled:text-gray-400 rounded-lg transition-colors"
                         title="Edit"
                       >
-                        <Edit2 size={18} />
+                        <Edit2 size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(bumdes.id)}
@@ -579,7 +577,7 @@ export default function EditBumdesPage() {
                         className="p-2 text-red-600 hover:bg-red-100 disabled:text-gray-400 rounded-lg transition-colors"
                         title="Hapus"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -589,11 +587,13 @@ export default function EditBumdesPage() {
           </div>
 
           {bumdesData.length === 0 && editingId === null && (
-            <div className="text-center py-12">
-              <p className="text-gray-500 mb-4">Belum ada data BUMDES</p>
+            <div className="text-center py-12 md:py-20">
+              <p className="text-xs md:text-base text-gray-500 mb-4">
+                Belum ada data BUMDES
+              </p>
               <button
                 onClick={handleAddNew}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold mx-auto"
+                className="flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold text-sm md:text-base mx-auto"
               >
                 <Plus size={20} />
                 Buat BUMDES Pertama
@@ -602,6 +602,6 @@ export default function EditBumdesPage() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

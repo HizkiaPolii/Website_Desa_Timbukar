@@ -43,7 +43,7 @@ export default function PDFUploadField({
 
     setSelectedFile(file);
     setFileName(file.name);
-    
+
     // Upload file langsung ke server
     await uploadFile(file);
   };
@@ -66,12 +66,12 @@ export default function PDFUploadField({
 
       const data = await response.json();
       const fileUrl = data.data.url;
-      
+
       setUploadedUrl(fileUrl);
       onChange?.(fileUrl);
-      
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Gagal upload file";
+      const errorMessage =
+        err instanceof Error ? err.message : "Gagal upload file";
       alert(errorMessage);
       setSelectedFile(null);
       setFileName("");
@@ -147,7 +147,7 @@ export default function PDFUploadField({
         onDrop={handleDrop}
         onClick={handleClick}
         className={`
-          relative w-full border-2 border-dashed rounded-lg p-6
+          relative w-full border-2 border-dashed rounded-lg p-4 sm:p-6
           transition-all duration-200 cursor-pointer
           ${
             isDragOver
@@ -173,11 +173,11 @@ export default function PDFUploadField({
 
         {!selectedFile && !uploadedUrl ? (
           <div className="text-center">
-            <Upload className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-            <p className="text-sm font-medium text-gray-700 mb-1">
+            <Upload className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-2 sm:mb-3" />
+            <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Drag and drop file PDF di sini
             </p>
-            <p className="text-xs text-gray-500 mb-3">
+            <p className="text-xs text-gray-500 mb-2 sm:mb-3">
               atau klik untuk memilih dari folder
             </p>
             <p className="text-xs text-gray-400">Maksimal ukuran file: 10MB</p>
@@ -185,18 +185,21 @@ export default function PDFUploadField({
         ) : isUploading ? (
           <div className="flex items-center justify-center gap-3">
             <Loader className="h-5 w-5 text-blue-500 animate-spin" />
-            <p className="text-sm text-gray-700">Mengunggah file...</p>
+            <p className="text-xs sm:text-sm text-gray-700">
+              Mengunggah file...
+            </p>
           </div>
         ) : (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <FileText className="h-10 w-10 text-red-500 flex-shrink-0" />
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <FileText className="h-8 w-8 sm:h-10 sm:w-10 text-red-500 flex-shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                   {fileName}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {selectedFile ? (selectedFile.size / 1024).toFixed(2) : "0"} KB
+                  {selectedFile ? (selectedFile.size / 1024).toFixed(2) : "0"}{" "}
+                  KB
                 </p>
               </div>
             </div>

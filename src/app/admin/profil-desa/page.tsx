@@ -9,7 +9,6 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import AdminSidebar from "@/components/AdminSidebar";
 import {
   getProfilDesa,
   updateProfilDesa,
@@ -204,120 +203,116 @@ export default function EditProfilDesaPage() {
 
   if (loading) {
     return (
-      <div className="flex">
-        <AdminSidebar />
-        <main className="flex-1 md:ml-64 bg-gray-50 min-h-screen p-4 md:p-8">
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-              <p className="mt-4 text-gray-600">Memuat data...</p>
-            </div>
-          </div>
-        </main>
+      <div className="w-full min-h-screen flex items-center justify-center pt-16 md:pt-0 bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+          <p className="mt-4 text-sm md:text-base text-gray-600">
+            Memuat data...
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="flex">
-        <AdminSidebar />
-        <main className="flex-1 md:ml-64 bg-gray-50 min-h-screen p-4 md:p-8">
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center text-red-600">
-              <AlertCircle size={48} className="mx-auto mb-4" />
-              <p>Gagal memuat data profil desa</p>
-            </div>
-          </div>
-        </main>
+      <div className="w-full min-h-screen flex items-center justify-center pt-16 md:pt-0 bg-gray-50">
+        <div className="text-center text-red-600">
+          <AlertCircle size={48} className="mx-auto mb-4" />
+          <p className="text-sm md:text-base">Gagal memuat data profil desa</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex">
-      <AdminSidebar />
-      <main className="flex-1 md:ml-64 bg-gray-50 min-h-screen">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 p-4 md:p-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                Edit Profil Desa
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Kelola visi, misi, tujuan, dan sejarah Desa Timbukar
+    <div className="w-full bg-gray-50 min-h-screen pt-16 md:pt-0">
+      {/* Head Section */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="mx-auto px-3 md:px-8 py-4 md:py-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            Edit Profil Desa
+          </h1>
+          <p className="text-sm md:text-base text-gray-600 mt-1">
+            Kelola visi, misi, dan sejarah singkat desa Timbukar
+          </p>
+        </div>
+      </div>
+
+      {/* Notification */}
+      {notification && (
+        <div className="sticky top-14 md:top-0 z-30 bg-white border-b border-gray-200">
+          <div className="mx-auto px-3 md:px-8 py-3 md:py-4">
+            <div
+              className={`p-3 md:p-4 rounded-lg flex items-start gap-3 ${
+                notification.type === "success"
+                  ? "bg-green-50 text-green-800 border border-green-200"
+                  : notification.type === "error"
+                  ? "bg-red-50 text-red-800 border border-red-200"
+                  : "bg-blue-50 text-blue-800 border border-blue-200"
+              }`}
+            >
+              {notification.type === "success" ? (
+                <CheckCircle
+                  size={16}
+                  className="mt-0.5 flex-shrink-0 md:size-5"
+                />
+              ) : (
+                <AlertCircle
+                  size={16}
+                  className="mt-0.5 flex-shrink-0 md:size-5"
+                />
+              )}
+              <p className="font-medium text-xs md:text-sm">
+                {notification.message}
               </p>
             </div>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-            >
-              <Save size={18} />
-              {saving ? "Menyimpan..." : "Simpan Perubahan"}
-            </button>
           </div>
         </div>
+      )}
 
-        {/* Notification */}
-        {notification && (
-          <div
-            className={`mx-4 mt-4 md:mx-8 md:mt-8 p-4 rounded-lg flex items-start gap-3 ${
-              notification.type === "success"
-                ? "bg-green-50 text-green-800 border border-green-200"
-                : notification.type === "error"
-                ? "bg-red-50 text-red-800 border border-red-200"
-                : "bg-blue-50 text-blue-800 border border-blue-200"
-            }`}
-          >
-            {notification.type === "success" ? (
-              <CheckCircle size={20} className="mt-1 flex-shrink-0" />
-            ) : (
-              <AlertCircle size={20} className="mt-1 flex-shrink-0" />
-            )}
-            <div>
-              <p className="font-medium">{notification.message}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="p-4 md:p-8 space-y-8">
+      {/* Main Content */}
+      <div className="mx-auto px-3 md:px-8 py-4 md:py-8">
+        <div className="space-y-4 md:space-y-6">
           {/* Visi Section */}
-          <div className="bg-white rounded-lg shadow p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Visi Desa</h2>
+          <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">
+              Visi Desa
+            </h2>
             <textarea
               value={data.visi}
               onChange={(e) => handleVisiChange(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent resize-none"
+              className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent resize-none text-sm md:text-base"
               rows={4}
               placeholder="Masukkan visi desa..."
             />
           </div>
 
           {/* Misi Section */}
-          <div className="bg-white rounded-lg shadow p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Misi Desa</h2>
+          <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 md:gap-4 mb-4 md:mb-6">
+              <h2 className="text-lg md:text-xl font-bold text-gray-900">
+                Misi Desa
+              </h2>
               <button
                 onClick={handleAddMisi}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 md:px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors text-sm md:text-base flex-shrink-0 w-full sm:w-auto"
               >
-                <Plus size={18} />
-                Tambah Misi
+                <Plus size={16} className="md:hidden" />
+                <Plus size={18} className="hidden md:block" />
+                <span>Tambah Misi</span>
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {data.misi.map((misi, index) => (
                 <div
                   key={index}
-                  className="border border-gray-200 rounded-lg p-4 hover:border-emerald-300 transition-colors"
+                  className="border border-gray-200 rounded-lg p-3 md:p-4 hover:border-emerald-300 transition-colors"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                  <div className="flex items-start justify-between mb-3 md:mb-4 gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 md:w-8 md:h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-xs md:text-sm flex-shrink-0">
                         {misi.no}
                       </div>
                       <button
@@ -326,28 +321,30 @@ export default function EditProfilDesaPage() {
                             editingMisiIndex === index ? null : index
                           )
                         }
-                        className="text-gray-600 hover:text-emerald-600 transition-colors"
+                        className="text-gray-600 hover:text-emerald-600 transition-colors flex-shrink-0 p-1"
+                        title="Edit"
                       >
-                        <Edit2 size={18} />
+                        <Edit2 size={16} className="md:size-5" />
                       </button>
                     </div>
                     <button
                       onClick={() => handleDeleteMisi(index)}
-                      className="text-red-600 hover:text-red-700 transition-colors"
+                      className="text-red-600 hover:text-red-700 transition-colors flex-shrink-0 p-1"
+                      title="Hapus"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={16} className="md:size-5" />
                     </button>
                   </div>
 
                   {editingMisiIndex === index ? (
-                    <div className="space-y-3">
+                    <div className="space-y-2 md:space-y-3">
                       <input
                         type="text"
                         value={misi.title}
                         onChange={(e) =>
                           handleMisiTitleChange(index, e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full px-3 md:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 text-sm md:text-base"
                         placeholder="Judul misi..."
                       />
                       <textarea
@@ -355,17 +352,19 @@ export default function EditProfilDesaPage() {
                         onChange={(e) =>
                           handleMisiDescriptionChange(index, e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 resize-none"
+                        className="w-full px-3 md:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 resize-none text-sm md:text-base"
                         rows={3}
                         placeholder="Deskripsi misi..."
                       />
                     </div>
                   ) : (
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-2">
+                      <h3 className="font-semibold text-gray-900 mb-1 md:mb-2 text-sm md:text-base">
                         {misi.title}
                       </h3>
-                      <p className="text-gray-700">{misi.description}</p>
+                      <p className="text-gray-700 text-xs md:text-sm line-clamp-2">
+                        {misi.description}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -374,35 +373,41 @@ export default function EditProfilDesaPage() {
           </div>
 
           {/* Sejarah Section */}
-          <div className="bg-white rounded-lg shadow p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4">
               Sejarah Singkat Desa
             </h2>
             <textarea
               value={data.sejarah}
               onChange={(e) => handleSejarahChange(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent resize-none"
+              className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent resize-none text-sm md:text-base"
               rows={6}
               placeholder="Masukkan sejarah desa..."
             />
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-xs md:text-sm text-gray-500 mt-3">
               Gunakan enter untuk membuat paragraf baru
             </p>
           </div>
 
-          {/* Save Button */}
-          <div className="flex justify-end gap-4">
+          {/* Save Button Bottom */}
+          <div className="flex justify-end gap-3 pb-4 md:pb-0">
             <button
               onClick={handleSave}
               disabled={saving}
-              className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
+              className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-6 md:px-8 py-2 md:py-3 rounded-lg font-medium flex items-center gap-2 transition-colors text-sm md:text-base"
             >
-              <Save size={20} />
-              {saving ? "Menyimpan..." : "Simpan Semua Perubahan"}
+              <Save size={16} className="md:hidden" />
+              <Save size={18} className="hidden md:block" />
+              <span className="hidden sm:inline">
+                {saving ? "Menyimpan..." : "Simpan Semua"}
+              </span>
+              <span className="sm:hidden">
+                {saving ? "Simpan..." : "Simpan"}
+              </span>
             </button>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
