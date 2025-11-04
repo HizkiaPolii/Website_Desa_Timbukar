@@ -2,6 +2,70 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { NextRequest, NextResponse } from "next/server";
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.desatimbukar.id/api";
+
+// Helper function untuk detect environment
+const isVercelEnvironment = (): boolean => {
+  return process.env.VERCEL === "1" || process.env.VERCEL_ENV === "production";
+};
+
+// Upload ke Backend API (VPS)
+async function uploadToBackendAPI(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("folder", "rkpdesa");
+
+  try {
+    console.log(`📤 Uploading PDF to Backend API: ${API_BASE_URL}/upload/pdf`);
+
+    const response = await fetch(`${API_BASE_URL}/upload/pdf`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Backend error: ${error.message || error.error || "Upload gagal"}`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ Backend PDF upload success:`, data);
+
+    // Backend biasanya return URL atau path
+    const filePath = data.data?.url || data.url || data.filePath || data.path;
+
+    if (!filePath) {
+      throw new Error("Backend tidak mengembalikan URL file");
+    }
+
+    return filePath;
+  } catch (error) {
+    console.error("❌ Backend API PDF upload error:", error);
+    throw error;
+  }
+}
+
+// Upload ke local filesystem (hanya untuk development)
+async function uploadToLocal(file: File, filename: string): Promise<string> {
+  // Path untuk menyimpan file
+  const uploadDir = join(process.cwd(), "public", "uploads", "rkpdesa");
+  const filepath = join(uploadDir, filename);
+
+  // Buat direktori jika belum ada
+  await mkdir(uploadDir, { recursive: true });
+
+  // Konversi file ke buffer dan simpan
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await writeFile(filepath, buffer);
+
+  // Return URL file yang bisa diakses
+  const fileUrl = `/uploads/rkpdesa/${filename}`;
+  console.log(`✅ Local PDF uploaded: ${fileUrl}`);
+
+  return fileUrl;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -36,19 +100,16 @@ export async function POST(request: NextRequest) {
     const random = Math.random().toString(36).substring(7);
     const filename = `rkpdesa-${timestamp}-${random}.pdf`;
 
-    // Path untuk menyimpan file
-    const uploadDir = join(process.cwd(), "public", "uploads", "rkpdesa");
-    const filepath = join(uploadDir, filename);
+    let fileUrl: string;
 
-    // Buat direktori jika belum ada
-    await mkdir(uploadDir, { recursive: true });
-
-    // Konversi file ke buffer dan simpan
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(filepath, buffer);
-
-    // Return URL file yang bisa diakses
-    const fileUrl = `/uploads/rkpdesa/${filename}`;
+    // Pilih upload method berdasarkan environment
+    if (isVercelEnvironment()) {
+      console.log("📤 PDF upload to Backend API (Vercel environment detected)");
+      fileUrl = await uploadToBackendAPI(file);
+    } else {
+      console.log("📤 PDF upload to local filesystem");
+      fileUrl = await uploadToLocal(file, filename);
+    }
 
     return NextResponse.json(
       {

@@ -95,7 +95,9 @@ export default function PemerintahanDesaPage() {
       foto: pegawai.foto || "/images/placeholder.svg",
       kontak: pegawai.noTelepon,
       tugas: undefined,
-      masaPeriode: pegawai.masaPeriode,
+      masaPeriode:
+        pegawai.masaPeriode ||
+        (pegawai.kategori === "pemimpin_desa" ? "2022 - 2030" : undefined),
       kategori: pegawai.kategori,
     }));
   };
@@ -393,31 +395,48 @@ export default function PemerintahanDesaPage() {
         {/* Divider */}
         <div className="border-t border-gray-300"></div>
 
-        {/* Bidang Section */}
-        <section className="space-y-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Bidang-Bidang Pemerintahan Desa
-            </h2>
+        {/* Baliho Struktur Desa Section */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <div className="inline-block px-6 py-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full border-2 border-purple-400 mb-6">
+              <h3 className="text-2xl font-bold text-purple-900">
+                Baliho Struktur Desa
+              </h3>
+            </div>
             <p className="text-gray-600">
-              Struktur bidang yang menangani berbagai aspek pembangunan dan
-              kesejahteraan masyarakat
+              Visualisasi lengkap struktur organisasi dan tata kerja Desa
+              Timbukar
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {bidang.map((item, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6"
-              >
-                <div className="text-4xl mb-4">{item.icon}</div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {item.nama}
-                </h3>
-                <p className="text-gray-600 text-sm">{item.deskripsi}</p>
+          {/* Large Structure Image */}
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-purple-200 hover:shadow-xl transition-shadow duration-300">
+              <div className="relative w-full bg-gray-100">
+                <Image
+                  src="/images/struktur.jpg"
+                  alt="Baliho Struktur Organisasi Desa Timbukar"
+                  width={1200}
+                  height={900}
+                  priority
+                  className="w-full h-auto object-contain"
+                />
               </div>
-            ))}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="max-w-7xl mx-auto bg-gradient-to-r from-purple-50 to-pink-50 border-l-4 border-purple-400 rounded-r-lg p-6">
+            <h4 className="font-semibold text-gray-900 mb-2">
+              Struktur Organisasi Desa Timbukar
+            </h4>
+            <p className="text-gray-700 leading-relaxed">
+              Baliho di atas menampilkan susunan lengkap pemerintahan Desa
+              Timbukar, mulai dari Kepala Desa, Sekretaris Desa, para Kaur,
+              hingga Kepala Jaga dan Maweteng di setiap dusun. Setiap perangkat
+              desa memiliki peran dan tanggung jawab penting dalam pelayanan
+              kepada masyarakat.
+            </p>
           </div>
         </section>
 
