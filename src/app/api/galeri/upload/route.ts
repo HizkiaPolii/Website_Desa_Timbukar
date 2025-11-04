@@ -19,7 +19,9 @@ async function uploadToBackendAPI(file: File): Promise<string> {
   formData.append("folder", "galeri");
 
   try {
-    console.log(`📤 Uploading Galeri to Backend API: ${API_BASE_URL}/galeri/upload`);
+    console.log(
+      `📤 Uploading Galeri to Backend API: ${API_BASE_URL}/galeri/upload`
+    );
 
     const response = await fetch(`${API_BASE_URL}/galeri/upload`, {
       method: "POST",
@@ -28,7 +30,9 @@ async function uploadToBackendAPI(file: File): Promise<string> {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`Backend error: ${error.message || error.error || "Upload gagal"}`);
+      throw new Error(
+        `Backend error: ${error.message || error.error || "Upload gagal"}`
+      );
     }
 
     const data = await response.json();
@@ -71,17 +75,16 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Validate file type
     const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     if (!validTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed" },
+        {
+          error: "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed",
+        },
         { status: 400 }
       );
     }
@@ -105,7 +108,9 @@ export async function POST(request: NextRequest) {
 
     // Pilih upload method berdasarkan environment
     if (isVercelEnvironment()) {
-      console.log("📤 Galeri upload to Backend API (Vercel environment detected)");
+      console.log(
+        "📤 Galeri upload to Backend API (Vercel environment detected)"
+      );
       publicPath = await uploadToBackendAPI(file);
     } else {
       console.log("📤 Galeri upload to local filesystem");

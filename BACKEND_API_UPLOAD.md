@@ -3,6 +3,7 @@
 ## ✅ Solusi Terbaik: Gunakan Backend API Existing
 
 Sudah saya update semua 3 endpoint upload untuk **auto-detect environment** dan upload ke:
+
 - **Local (Development)**: Simpan ke `/public/images/` atau `/public/uploads/` seperti sebelumnya ✓
 - **Vercel (Production)**: Upload langsung ke **Backend API di VPS** ✓
 
@@ -44,9 +45,11 @@ Sudah saya update semua 3 endpoint upload untuk **auto-detect environment** dan 
 Pastikan backend API VPS Anda punya endpoint-endpoint ini:
 
 ### 1️⃣ **POST /upload** (General Images)
+
 **Digunakan untuk**: APBDES, Pemerintahan, Bumdes, dll
 
 **Request:**
+
 ```bash
 POST https://api.desatimbukar.id/api/upload
 Content-Type: multipart/form-data
@@ -56,6 +59,7 @@ Content-Type: multipart/form-data
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -71,9 +75,11 @@ Content-Type: multipart/form-data
 ```
 
 ### 2️⃣ **POST /upload/pdf** (PDF Files)
+
 **Digunakan untuk**: RKPDESA files
 
 **Request:**
+
 ```bash
 POST https://api.desatimbukar.id/api/upload/pdf
 Content-Type: multipart/form-data
@@ -82,6 +88,7 @@ Content-Type: multipart/form-data
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -93,9 +100,11 @@ Content-Type: multipart/form-data
 ```
 
 ### 3️⃣ **POST /galeri/upload** (Galeri Images)
+
 **Digunakan untuk**: Tambah/Edit Galeri
 
 **Request:**
+
 ```bash
 POST https://api.desatimbukar.id/api/galeri/upload
 Content-Type: multipart/form-data
@@ -104,6 +113,7 @@ Content-Type: multipart/form-data
 ```
 
 **Response:**
+
 ```json
 {
   "url": "/uploads/galeri/galeri-1761813274085-xyz789.jpg",
@@ -151,6 +161,7 @@ Frontend mengharapkan salah satu format ini:
 Sebelum deploy ke Vercel, test backend API Anda:
 
 ### Test Image Upload
+
 ```bash
 curl -X POST https://api.desatimbukar.id/api/upload \
   -F "file=@/path/to/image.jpg" \
@@ -158,12 +169,14 @@ curl -X POST https://api.desatimbukar.id/api/upload \
 ```
 
 ### Test PDF Upload
+
 ```bash
 curl -X POST https://api.desatimbukar.id/api/upload/pdf \
   -F "file=@/path/to/document.pdf"
 ```
 
 ### Test Galeri Upload
+
 ```bash
 curl -X POST https://api.desatimbukar.id/api/upload/pdf \
   -F "file=@/path/to/galeri.jpg"
@@ -180,6 +193,7 @@ NEXT_PUBLIC_API_BASE_URL=https://api.desatimbukar.id/api
 ```
 
 **Cara set di Vercel:**
+
 1. Buka project di [vercel.com](https://vercel.com)
 2. Settings → Environment Variables
 3. Pastikan `NEXT_PUBLIC_API_BASE_URL` = Backend API URL Anda
@@ -194,6 +208,7 @@ NEXT_PUBLIC_API_BASE_URL=https://api.desatimbukar.id/api
 ✅ `src/app/api/galeri/upload/route.ts` - Upload galeri images
 
 Semua sudah support:
+
 - ✅ Localhost → upload ke filesystem lokal
 - ✅ Vercel → upload ke backend API VPS
 
@@ -223,16 +238,19 @@ Semua sudah support:
 ## 🐛 Troubleshooting
 
 ### Upload masih gagal di Vercel
+
 - ✅ Pastikan Backend API bisa diakses dari Vercel
 - ✅ Cek CORS setting di Backend API (allow origin dari Vercel)
 - ✅ Test API manual dengan curl
 - ✅ Cek console logs di Vercel: Deployments → View Build Logs
 
 ### Error: "Backend tidak mengembalikan URL file"
+
 - Backend response format tidak sesuai ekspektasi
 - Pastikan response return `url`, `filePath`, `path`, atau `data.url`
 
 ### Upload lambat
+
 - Tergantung ukuran file dan kecepatan network VPS
 - Pastikan VPS tidak overload
 - Pertimbangkan optimize file size sebelum upload
@@ -244,6 +262,7 @@ Semua sudah support:
 Jika backend API Anda belum punya endpoint upload, minta ke tim backend untuk implement endpoint sesuai format di atas.
 
 Backend harus handle:
+
 1. ✅ Terima file multipart/form-data
 2. ✅ Validasi file type & size
 3. ✅ Simpan file di VPS storage

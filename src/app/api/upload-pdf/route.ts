@@ -26,7 +26,9 @@ async function uploadToBackendAPI(file: File): Promise<string> {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`Backend error: ${error.message || error.error || "Upload gagal"}`);
+      throw new Error(
+        `Backend error: ${error.message || error.error || "Upload gagal"}`
+      );
     }
 
     const data = await response.json();

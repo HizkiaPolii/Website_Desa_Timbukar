@@ -26,7 +26,9 @@ async function uploadToBackendAPI(file: File, folder: string): Promise<string> {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`Backend error: ${error.message || error.error || "Upload gagal"}`);
+      throw new Error(
+        `Backend error: ${error.message || error.error || "Upload gagal"}`
+      );
     }
 
     const data = await response.json();
@@ -47,7 +49,11 @@ async function uploadToBackendAPI(file: File, folder: string): Promise<string> {
 }
 
 // Upload ke local filesystem (hanya untuk development)
-async function uploadToLocal(file: File, folder: string, filename: string): Promise<string> {
+async function uploadToLocal(
+  file: File,
+  folder: string,
+  filename: string
+): Promise<string> {
   // Path untuk menyimpan file (dinamis berdasarkan folder)
   const uploadDir = join(process.cwd(), "public", "images", folder);
   const filepath = join(uploadDir, filename);

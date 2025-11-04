@@ -5,7 +5,7 @@
 ### 1. Backend API Configuration
 
 - [ ] Backend API endpoint `/upload` sudah ready
-- [ ] Backend API endpoint `/upload/pdf` sudah ready  
+- [ ] Backend API endpoint `/upload/pdf` sudah ready
 - [ ] Backend API endpoint `/galeri/upload` sudah ready
 - [ ] Backend API bisa menerima multipart/form-data
 - [ ] Backend API return response dengan URL file
@@ -15,12 +15,14 @@
 ### 2. Environment Variables
 
 **Local (.env.local):**
+
 ```bash
 NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api
 # atau sesuaikan dengan backend local Anda
 ```
 
 **Vercel:**
+
 ```bash
 NEXT_PUBLIC_API_BASE_URL=https://api.desatimbukar.id/api
 # atau sesuaikan dengan backend VPS Anda
@@ -90,6 +92,7 @@ git push origin master
 1. Buka app di: `https://[project].vercel.app`
 2. Login ke admin panel
 3. Test upload di halaman:
+
    - [ ] Admin → APBDES → Upload foto
    - [ ] Admin → Galeri → Upload foto
    - [ ] Admin → RKPDESA → Upload PDF
@@ -114,21 +117,24 @@ Jika masih gagal upload di Vercel:
 ### Debugging Steps
 
 1. **Check Vercel Logs:**
+
    ```bash
    # Di Vercel Console → Deployments → View Function Logs
    # Cari error message saat upload
    ```
 
 2. **Test Backend API dari Vercel:**
+
    - Buka Vercel deployment page
    - Buka DevTools Console (F12)
-   - Run: 
+   - Run:
      ```javascript
-     fetch('https://api.desatimbukar.id/api/upload')
+     fetch("https://api.desatimbukar.id/api/upload");
      // See if accessible
      ```
 
 3. **Check Backend API:**
+
    - Verifikasi endpoint: `curl https://api.desatimbukar.id/api/upload`
    - Cek CORS headers
    - Cek server logs
@@ -147,11 +153,13 @@ Jika masih gagal upload di Vercel:
 Tanyakan ke tim backend:
 
 1. **API Endpoints**
+
    - Endpoint `/upload` sudah ada?
    - Endpoint `/upload/pdf` sudah ada?
    - Endpoint `/galeri/upload` sudah ada?
 
 2. **Response Format**
+
    ```json
    {
      "url": "...",
@@ -163,14 +171,17 @@ Tanyakan ke tim backend:
      "path": "..."
    }
    ```
+
    Mana format yang digunakan?
 
 3. **File Storage**
+
    - File disimpan di mana? (path/folder)
    - URL file bisa diakses dari internet?
    - Retention policy? (berapa lama file disimpan)
 
 4. **Security**
+
    - Need authentication? (Bearer token)
    - File type validation?
    - File size limit?
