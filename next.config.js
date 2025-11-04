@@ -11,6 +11,10 @@ const nextConfig = {
         protocol: "http",
         hostname: "127.0.0.1",
       },
+      {
+        protocol: "https",
+        hostname: "api.desatimbukar.id",
+      },
     ],
     // Unoptimized untuk development, bisa di-optimize di production
     unoptimized: process.env.NODE_ENV === "development",

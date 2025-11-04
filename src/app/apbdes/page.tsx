@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import PageLayout from "@/components/PageLayout";
 import { apbdesApi } from "@/services/apbdesApi";
+import { getImageUrl } from "@/utils/imageUrl";
 import { ChevronDown } from "lucide-react";
 
 interface ApbdesData {
@@ -39,6 +40,12 @@ export default function ApbdesPage() {
         setIsLoading(true);
         const allData = await apbdesApi.getAll();
 
+        // DEBUG: Log data dari API
+        console.log("📊 APBDES Data from API:", allData);
+        if (allData && allData.length > 0) {
+          console.log("📸 First item file_dokumen:", allData[0]?.file_dokumen);
+        }
+
         if (allData && allData.length > 0) {
           setAllApbdesData(allData);
           // Ambil data tahun terbaru
@@ -54,6 +61,7 @@ export default function ApbdesPage() {
             return currentTahun > latestTahun ? current : latest;
           });
           setApbdesData(latestData);
+          console.log("✅ Latest APBDES Data:", latestData);
           setSelectedTahun(
             typeof latestData.tahun === "string"
               ? parseInt(latestData.tahun)
@@ -301,7 +309,7 @@ export default function ApbdesPage() {
                   onClick={() => setIsModalOpen(true)}
                 >
                   <Image
-                    src={apbdesData.file_dokumen}
+                    src={getImageUrl(apbdesData.file_dokumen)}
                     alt={`APBDES ${apbdesData.tahun}`}
                     fill
                     className="w-full h-auto object-contain"
@@ -352,7 +360,7 @@ export default function ApbdesPage() {
                 {/* Image Container */}
                 <div className="bg-black rounded-lg overflow-hidden flex items-center justify-center">
                   <Image
-                    src={apbdesData.file_dokumen}
+                    src={getImageUrl(apbdesData.file_dokumen)}
                     alt={`APBDES ${apbdesData.tahun}`}
                     width={800}
                     height={600}

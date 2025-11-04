@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import PageLayout from "@/components/PageLayout";
+import { getImageUrl } from "@/utils/imageUrl";
 
 interface BumdesData {
   id: number;
@@ -178,7 +179,7 @@ export default function BumdesPage() {
                 {bumdes.gambar && (
                   <div className="flex items-center justify-center">
                     <Image
-                      src={bumdes.gambar}
+                      src={getImageUrl(bumdes.gambar)}
                       alt={bumdes.nama_bumdes}
                       width={600}
                       height={600}

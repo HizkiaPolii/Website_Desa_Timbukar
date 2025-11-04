@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Phone, Mail, Users, AlertCircle } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
+import { getImageUrl } from "@/utils/imageUrl";
 import pemerintahanDesaData from "@/data/pemerintahanDesa.json";
 import {
   pemerintahanDesaService,
@@ -172,14 +173,10 @@ export default function PemerintahanDesaPage() {
             className={`relative w-32 h-32 rounded-full overflow-hidden border-4 ${config.border} bg-gray-200 shadow-lg mx-auto hover:shadow-xl transition-all ${config.hoverBorder}`}
           >
             <Image
-              src={posisi.foto}
+              src={getImageUrl(posisi.foto)}
               alt={posisi.nama}
               fill
               className="object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "/images/placeholder.svg";
-              }}
             />
           </div>
         </div>

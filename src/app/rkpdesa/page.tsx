@@ -3,6 +3,7 @@
 import { Download, AlertCircle } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import PDFPreview from "@/components/PDFPreview";
+import { getImageUrl } from "@/utils/imageUrl";
 import { useState, useEffect } from "react";
 
 interface RKPDesaItem {
@@ -183,7 +184,7 @@ export default function RKPDESA() {
                       {item.fileDokumen && (
                         <div className="mt-6">
                           <a
-                            href={item.fileDokumen}
+                            href={getImageUrl(item.fileDokumen)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full inline-flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg transition-colors font-semibold text-lg shadow-md hover:shadow-lg"
@@ -199,7 +200,7 @@ export default function RKPDESA() {
                     {item.fileDokumen && (
                       <div className="lg:col-span-2">
                         <PDFPreview
-                          fileUrl={item.fileDokumen}
+                          fileUrl={getImageUrl(item.fileDokumen)}
                           fileName={item.judul}
                         />
                       </div>

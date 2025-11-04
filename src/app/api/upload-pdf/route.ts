@@ -6,8 +6,15 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.desatimbukar.id/api";
 
 // Helper function untuk detect environment
-const isVercelEnvironment = (): boolean => {
-  return process.env.VERCEL === "1" || process.env.VERCEL_ENV === "production";
+// Gunakan Backend API jika URL bukan localhost
+const shouldUseBackendAPI = (): boolean => {
+  const isLocalhost =
+    API_BASE_URL.includes("localhost") ||
+    API_BASE_URL.includes("127.0.0.1") ||
+    API_BASE_URL.includes("0.0.0.0");
+
+  // Jika bukan localhost, gunakan backend API
+  return !isLocalhost;
 };
 
 // Upload ke Backend API (VPS)
@@ -18,33 +25,85 @@ async function uploadToBackendAPI(file: File): Promise<string> {
 
   try {
     console.log(`📤 Uploading PDF to Backend API: ${API_BASE_URL}/upload/pdf`);
+    console.log(`   File: ${file.name}, Size: ${file.size} bytes`);
 
     const response = await fetch(`${API_BASE_URL}/upload/pdf`, {
       method: "POST",
       body: formData,
+      signal: AbortSignal.timeout(30000), // 30 second timeout
     });
 
+    console.log(`📡 Backend response status: ${response.status}`);
+
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(
-        `Backend error: ${error.message || error.error || "Upload gagal"}`
-      );
+      let errorMessage = `HTTP ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+        console.error(`❌ Backend error response:`, errorData);
+      } catch (e) {
+        const text = await response.text();
+        console.error(`❌ Backend error (text):`, text);
+        errorMessage = text || errorMessage;
+      }
+      throw new Error(`Backend API error: ${errorMessage}`);
     }
 
     const data = await response.json();
-    console.log(`✅ Backend PDF upload success:`, data);
+    console.log(`✅ Backend PDF upload raw response:`, data);
 
-    // Backend biasanya return URL atau path
-    const filePath = data.data?.url || data.url || data.filePath || data.path;
+    // Try multiple response format patterns
+    let filePath: string | undefined;
 
-    if (!filePath) {
-      throw new Error("Backend tidak mengembalikan URL file");
+    if (data.data?.url) {
+      filePath = data.data.url;
+      console.log(`✅ Extracted from data.data.url: ${filePath}`);
+    } else if (data.url) {
+      filePath = data.url;
+      console.log(`✅ Extracted from data.url: ${filePath}`);
+    } else if (data.filePath) {
+      filePath = data.filePath;
+      console.log(`✅ Extracted from data.filePath: ${filePath}`);
+    } else if (data.path) {
+      filePath = data.path;
+      console.log(`✅ Extracted from data.path: ${filePath}`);
+    } else if (data.file) {
+      filePath = data.file;
+      console.log(`✅ Extracted from data.file: ${filePath}`);
     }
 
-    return filePath;
+    if (!filePath) {
+      console.error(
+        `❌ Could not extract URL from backend response. Available keys: ${Object.keys(
+          data
+        ).join(", ")}`
+      );
+      throw new Error(
+        `Backend response format tidak sesuai. Response: ${JSON.stringify(
+          data
+        )}`
+      );
+    }
+
+    // Handle relative URL dari backend
+    // Jika backend return relative path (/uploads/...), convert ke full URL
+    let finalPath = filePath;
+    if (filePath.startsWith("/uploads/")) {
+      // Backend return relative path, convert to full URL
+      finalPath = `${API_BASE_URL.replace("/api", "")}${filePath}`;
+      console.log(`🔄 Converted relative path to full URL: ${finalPath}`);
+    } else if (!filePath.startsWith("http")) {
+      // Path tidak relative dan bukan http, assume relative
+      finalPath = `${API_BASE_URL.replace("/api", "")}${filePath}`;
+      console.log(`🔄 Converted non-http path to full URL: ${finalPath}`);
+    }
+
+    console.log(`✅ Final backend file URL: ${finalPath}`);
+    return finalPath;
   } catch (error) {
-    console.error("❌ Backend API PDF upload error:", error);
-    throw error;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ Backend API PDF upload error: ${errorMessage}`);
+    throw new Error(`Backend upload gagal: ${errorMessage}`);
   }
 }
 
@@ -104,9 +163,9 @@ export async function POST(request: NextRequest) {
 
     let fileUrl: string;
 
-    // Pilih upload method berdasarkan environment
-    if (isVercelEnvironment()) {
-      console.log("📤 PDF upload to Backend API (Vercel environment detected)");
+    // Pilih upload method berdasarkan API URL
+    if (shouldUseBackendAPI()) {
+      console.log("📤 PDF upload to Backend API");
       fileUrl = await uploadToBackendAPI(file);
     } else {
       console.log("📤 PDF upload to local filesystem");

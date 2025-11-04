@@ -138,6 +138,8 @@ export default function AdminApbdesPage() {
     }
 
     try {
+      console.log("🔵 Upload start:", { filename: file.name, size: file.size });
+
       const formDataToSend = new FormData();
       formDataToSend.append("file", file);
       formDataToSend.append("folder", "apbdes"); // Simpan di folder khusus APBDES
@@ -147,12 +149,39 @@ export default function AdminApbdesPage() {
         body: formDataToSend,
       });
 
+      console.log("📡 Upload response status:", response.status);
+
       if (!response.ok) {
-        throw new Error("Upload gagal");
+        const errorData = await response.json();
+        console.error("❌ Upload error response:", errorData);
+        throw new Error(errorData.error || errorData.message || "Upload gagal");
       }
 
       const result = await response.json();
-      const filePath = result.filePath || result.url || result.path;
+      console.log("✅ Upload response:", result);
+
+      // Extract filePath dari berbagai kemungkinan format
+      const filePath =
+        result.filePath ||
+        result.path ||
+        result.publicPath ||
+        result.url ||
+        result.data?.filePath ||
+        result.data?.path ||
+        result.data?.url;
+
+      if (!filePath) {
+        console.error(
+          "❌ No filePath in response. Available keys:",
+          Object.keys(result)
+        );
+        throw new Error(
+          "Response tidak mengandung path file. Response: " +
+            JSON.stringify(result)
+        );
+      }
+
+      console.log("✅ Final filePath:", filePath);
 
       setFormData((prev) => ({
         ...prev,
@@ -161,8 +190,10 @@ export default function AdminApbdesPage() {
 
       showToast.success("Foto berhasil diupload");
     } catch (error) {
-      console.error("Upload error:", error);
-      showToast.error("Gagal upload foto");
+      const errorMessage =
+        error instanceof Error ? error.message : "Gagal upload foto";
+      console.error("🔴 Upload error:", errorMessage, error);
+      showToast.error(errorMessage);
     }
   };
 

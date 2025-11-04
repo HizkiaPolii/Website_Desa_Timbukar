@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { X, Search, Filter } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
+import { getImageUrl } from "@/utils/imageUrl";
 import { showToast } from "@/utils/toast";
 
 interface GaleriItem {
@@ -114,11 +115,21 @@ export default function GaleriPage() {
 
   const getImageUrl = (imagePath: string | null | undefined): string => {
     if (!imagePath) return "/images/placeholder.svg";
+
     // Jika sudah full URL (http/https), kembalikan as-is
     if (imagePath.startsWith("http")) return imagePath;
-    // Jika sudah path absolut dari Next.js API (/uploads/...), kembalikan as-is
-    if (imagePath.startsWith("/uploads/")) return imagePath;
+
+    // Jika sudah path absolut dari backend API
+    if (imagePath.startsWith("/uploads/")) {
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://api.desatimbukar.id/api";
+      const baseUrl = apiUrl.replace("/api", "");
+      return `${baseUrl}${imagePath}`;
+    }
+
     if (imagePath.startsWith("/images/")) return imagePath;
+
     // Fallback: anggap sebagai nama file, transform to /images/galeri/...
     return `/images/galeri/${imagePath}`;
   };

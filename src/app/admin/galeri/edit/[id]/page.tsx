@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { showToast } from "@/utils/toast";
+import ImageUploadField from "@/components/ImageUploadField";
 
 interface Galeri {
   id: number;
@@ -50,36 +51,6 @@ async function getGaleriById(id: number) {
   }
 }
 
-async function uploadImage(file: File): Promise<string> {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await fetch(`${API_URL}/galeri/upload`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        ...(getAuthToken() && { Authorization: `Bearer ${getAuthToken()}` }),
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || error.message || "Failed to upload image");
-    }
-
-    const data = await response.json();
-    showToast.success("Gambar berhasil diunggah");
-    return data.url;
-  } catch (error) {
-    console.error("Error uploading image:", error);
-    const message =
-      error instanceof Error ? error.message : "Gagal mengunggah gambar";
-    showToast.error(message);
-    throw error;
-  }
-}
-
 async function updateGaleri(id: number, payload: any) {
   try {
     const response = await fetch(`${API_URL}/galeri/${id}`, {
@@ -114,10 +85,7 @@ export default function EditGaleriPage() {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState<Partial<Galeri>>({});
 
   const kategoriOptions = [
@@ -136,7 +104,6 @@ export default function EditGaleriPage() {
       setError(null);
       const data = await getGaleriById(parseInt(id));
       setFormData(data);
-      setPreviewImage(data.gambar);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal memuat data");
     } finally {
@@ -162,17 +129,11 @@ export default function EditGaleriPage() {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setPreviewImage(result);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleImageChange = (imageUrl: string | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      gambar: imageUrl || null,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -183,7 +144,7 @@ export default function EditGaleriPage() {
       return;
     }
 
-    if (!formData.gambar && !imageFile) {
+    if (!formData.gambar) {
       setError("Gambar tidak boleh kosong");
       return;
     }
@@ -197,19 +158,10 @@ export default function EditGaleriPage() {
       setSubmitting(true);
       setError(null);
 
-      let gambarUrl = formData.gambar;
-
-      // Upload new image if selected
-      if (imageFile) {
-        setUploading(true);
-        gambarUrl = await uploadImage(imageFile);
-        setUploading(false);
-      }
-
       await updateGaleri(parseInt(id), {
         judul: formData.judul,
         deskripsi: formData.deskripsi || null,
-        gambar: gambarUrl,
+        gambar: formData.gambar,
         kategori: formData.kategori,
       });
 
@@ -218,7 +170,6 @@ export default function EditGaleriPage() {
       setError(err instanceof Error ? err.message : "Gagal memperbarui data");
     } finally {
       setSubmitting(false);
-      setUploading(false);
     }
   };
 
@@ -299,54 +250,14 @@ export default function EditGaleriPage() {
 
         {/* Gambar */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Gambar <span className="text-red-500">*</span>
-          </label>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition cursor-pointer">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-              id="gambar-input"
-              disabled={submitting || uploading}
-            />
-            <label htmlFor="gambar-input" className="cursor-pointer block">
-              {previewImage ? (
-                <div className="space-y-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={previewImage}
-                    alt="Preview"
-                    className="max-h-48 mx-auto rounded"
-                  />
-                  <p className="text-sm text-emerald-600 font-semibold">
-                    Klik untuk mengubah gambar
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <svg
-                    className="mx-auto h-12 w-12 text-gray-400"
-                    stroke="currentColor"
-                    fill="none"
-                    viewBox="0 0 48 48"
-                  >
-                    <path
-                      d="M28 8H12a4 4 0 00-4 4v20a4 4 0 004 4h24a4 4 0 004-4V20m-8-12l-3.172-3.172a4 4 0 00-5.656 0L9.172 15M33 5v6m0 0v6m0-6h6m0 0h6"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <p className="text-gray-600">Klik atau drag gambar ke sini</p>
-                  <p className="text-xs text-gray-500">
-                    Format yang didukung: JPG, PNG, GIF
-                  </p>
-                </div>
-              )}
-            </label>
-          </div>
+          <ImageUploadField
+            value={formData.gambar || ""}
+            onChange={handleImageChange}
+            label="Gambar Galeri"
+            placeholder="Drag and drop foto atau klik untuk pilih"
+            required
+            uploadFolder="galeri"
+          />
         </div>
 
         {/* Buttons */}
@@ -354,21 +265,17 @@ export default function EditGaleriPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            disabled={submitting || uploading}
+            disabled={submitting}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition"
           >
             Batal
           </button>
           <button
             type="submit"
-            disabled={submitting || uploading}
+            disabled={submitting}
             className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg disabled:opacity-50 transition font-semibold"
           >
-            {uploading
-              ? "Mengunggah gambar..."
-              : submitting
-              ? "Menyimpan..."
-              : "Simpan"}
+            {submitting ? "Menyimpan..." : "Simpan"}
           </button>
         </div>
       </form>

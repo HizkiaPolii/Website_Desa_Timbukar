@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { showToast } from "@/utils/toast";
+import ImageUploadField from "@/components/ImageUploadField";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.desatimbukar.id/api";
@@ -65,6 +67,13 @@ export default function TambahLembagaPage() {
     }));
   };
 
+  const handleImageChange = (imageUrl: string | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      gambar: imageUrl || "",
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -86,9 +95,12 @@ export default function TambahLembagaPage() {
         gambar: formData.gambar || undefined,
       });
 
+      showToast.success("Lembaga masyarakat berhasil dibuat");
       router.push("/admin/lembaga-masyarakat");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal membuat data");
+      const message = err instanceof Error ? err.message : "Gagal membuat data";
+      setError(message);
+      showToast.error(message);
     } finally {
       setSubmitting(false);
     }
@@ -116,7 +128,8 @@ export default function TambahLembagaPage() {
             onChange={handleInputChange}
             placeholder="Masukkan nama lembaga"
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            disabled={submitting}
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:opacity-50"
           />
         </div>
 
@@ -131,7 +144,8 @@ export default function TambahLembagaPage() {
             onChange={handleInputChange}
             placeholder="Deskripsi lembaga"
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            disabled={submitting}
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:opacity-50"
           />
         </div>
 
@@ -145,7 +159,8 @@ export default function TambahLembagaPage() {
             value={formData.ketua}
             onChange={handleInputChange}
             placeholder="Nama ketua lembaga"
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            disabled={submitting}
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:opacity-50"
           />
         </div>
 
@@ -159,7 +174,8 @@ export default function TambahLembagaPage() {
             value={formData.noTelepon}
             onChange={handleInputChange}
             placeholder="Nomor telepon"
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            disabled={submitting}
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:opacity-50"
           />
         </div>
 
@@ -174,22 +190,18 @@ export default function TambahLembagaPage() {
             onChange={handleInputChange}
             placeholder="Alamat lembaga"
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            disabled={submitting}
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:opacity-50"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            URL Gambar
-          </label>
-          <input
-            id="gambar"
-            name="gambar"
-            type="url"
+          <ImageUploadField
             value={formData.gambar}
-            onChange={handleInputChange}
-            placeholder="URL gambar lembaga"
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            onChange={handleImageChange}
+            label="Foto Lembaga"
+            placeholder="Drag and drop foto atau klik untuk pilih"
+            uploadFolder="lembaga"
           />
         </div>
 
