@@ -74,7 +74,10 @@ export default function ImageUploadField({
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      console.log("📤 Upload request to /api/upload with folder:", uploadFolder);
+      console.log(
+        "📤 Upload request to /api/upload with folder:",
+        uploadFolder
+      );
 
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -92,18 +95,27 @@ export default function ImageUploadField({
 
       const data = await response.json();
       console.log("✅ Upload response received:", data);
-      
-      const filePath = data.filePath || data.publicPath || data.path || data.filename;
+
+      const filePath =
+        data.filePath || data.publicPath || data.path || data.filename;
 
       if (!filePath) {
-        throw new Error("Upload response tidak mengandung filePath. Response: " + JSON.stringify(data));
+        throw new Error(
+          "Upload response tidak mengandung filePath. Response: " +
+            JSON.stringify(data)
+        );
       }
 
-      // Jika filePath hanya nama file, tambahkan path lengkap
+      // Jika filePath hanya nama file (bukan URL full atau path absolut), tambahkan path lengkap
       let finalPath = filePath;
-      if (filePath && !filePath.startsWith("/")) {
+      // Only add prefix jika bukan URL penuh dan bukan path absolut
+      if (
+        filePath &&
+        !filePath.startsWith("/") &&
+        !filePath.startsWith("http")
+      ) {
         finalPath = `/images/${uploadFolder}/${filePath}`;
-        console.log("⚠️  Added folder prefix ->" , finalPath);
+        console.log("⚠️  Added folder prefix ->", finalPath);
       }
 
       console.log("🟢 Final image path:", finalPath);
@@ -177,6 +189,14 @@ export default function ImageUploadField({
     if (imagePath.startsWith("/images/")) return imagePath;
     // Jika data URL
     if (imagePath.startsWith("data:")) return imagePath;
+    // Jika sudah path lengkap dari backend uploads
+    if (imagePath.startsWith("/uploads/")) {
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://api.desatimbukar.id/api";
+      const baseUrl = apiUrl.replace("/api", "");
+      return `${baseUrl}${imagePath}`;
+    }
     // Jika hanya nama file (dari backend database), transform to /images/galeri/...
     return `/images/galeri/${imagePath}`;
   };
