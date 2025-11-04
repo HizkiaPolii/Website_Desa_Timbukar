@@ -18,12 +18,30 @@ export const getImageUrl = (
 
   // Already a full URL (http/https)
   if (imagePath.startsWith("http")) {
-    // Fix: Remove /api/ from URL if it's there (backend issue)
-    // https://api.desatimbukar.id/api/uploads/... → https://api.desatimbukar.id/uploads/...
-    if (imagePath.includes("/api/uploads/")) {
-      return imagePath.replace("/api/uploads/", "/uploads/");
+    let url = imagePath;
+
+    // Fix 1: Handle broken URLs like https:/.desatimbukar.id/api/uploads/...
+    if (url.includes("https:/.")) {
+      url = url.replace("https:/.", "https://api.");
     }
-    return imagePath;
+
+    // Fix 2: Remove /api/ from uploads path
+    if (url.includes("/api/uploads/")) {
+      url = url.replace("/api/uploads/", "/uploads/");
+    }
+
+    // Fix 3: Ensure domain is correct
+    if (
+      url.includes("desatimbukar.id/uploads/") &&
+      !url.includes("api.desatimbukar.id")
+    ) {
+      url = url.replace(
+        "desatimbukar.id/uploads/",
+        "api.desatimbukar.id/uploads/"
+      );
+    }
+
+    return url;
   }
 
   // Relative path from backend API

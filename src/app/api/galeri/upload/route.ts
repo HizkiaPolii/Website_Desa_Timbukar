@@ -94,11 +94,17 @@ async function uploadToBackendAPI(file: File): Promise<string> {
     let finalPath = publicPath;
     if (publicPath.startsWith("/uploads/")) {
       // Backend return relative path, convert to full URL
-      finalPath = `${API_BASE_URL.replace("/api", "")}${publicPath}`;
+      const baseUrl = API_BASE_URL.endsWith("/api")
+        ? API_BASE_URL.slice(0, -4) // Remove last 4 chars (/api)
+        : API_BASE_URL;
+      finalPath = `${baseUrl}${publicPath}`;
       console.log(`🔄 Converted relative path to full URL: ${finalPath}`);
     } else if (!publicPath.startsWith("http")) {
       // Path tidak relative dan bukan http, assume relative
-      finalPath = `${API_BASE_URL.replace("/api", "")}${publicPath}`;
+      const baseUrl = API_BASE_URL.endsWith("/api")
+        ? API_BASE_URL.slice(0, -4) // Remove last 4 chars (/api)
+        : API_BASE_URL;
+      finalPath = `${baseUrl}${publicPath}`;
       console.log(`🔄 Converted non-http path to full URL: ${finalPath}`);
     }
 
