@@ -166,6 +166,55 @@ export default function AdminApbdesPage() {
     }
   };
 
+  const handleDeleteImage = async () => {
+    if (!apbdesData?.id || !selectedYear) return;
+
+    try {
+      setIsSaving(true);
+      const pendapatanAmount = parseFloat(formData.pendapatan);
+      const belanjaAmount = parseFloat(formData.belanja);
+      const pembiayaanAmount = parseFloat(formData.pembiayaan) || 0;
+
+      // Kirim update dengan file_dokumen kosong untuk delete
+      const updateData = {
+        tahun: selectedYear,
+        keterangan: formData.keterangan || "Laporan Keuangan Desa",
+        pendapatan: pendapatanAmount,
+        belanja: belanjaAmount,
+        pembiayaan: pembiayaanAmount,
+        file_dokumen: "", // Empty string = delete gambar
+      };
+
+      console.log("🗑️ Deleting image with PATCH:", updateData);
+      // Gunakan updateJson (PATCH) untuk delete image
+      const result = await apbdesApi.updateJson(apbdesData.id, updateData);
+      console.log("✅ Update result:", result);
+
+      setFormData((prev) => ({
+        ...prev,
+        file_dokumen: "",
+      }));
+      showToast.success("Foto APBDES berhasil dihapus!");
+
+      // Refresh data dari server
+      const updatedData = await apbdesApi.getByTahun(selectedYear);
+      console.log("✅ Updated data after delete:", updatedData);
+      if (updatedData) {
+        setApbdesData(updatedData);
+        setFormData((prev) => ({
+          ...prev,
+          file_dokumen: updatedData.file_dokumen || "",
+        }));
+      }
+    } catch (error: any) {
+      console.error("❌ Error deleting image:", error);
+      console.error("Error message:", error.message);
+      showToast.error(error.message || "Gagal menghapus foto APBDES");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!selectedYear) {
       showToast.error("Pilih tahun terlebih dahulu");
@@ -392,15 +441,11 @@ export default function AdminApbdesPage() {
                         />
                         <button
                           type="button"
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              file_dokumen: "",
-                            }))
-                          }
-                          className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600"
+                          onClick={handleDeleteImage}
+                          disabled={isSaving}
+                          className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 disabled:opacity-50 transition"
                         >
-                          Hapus
+                          {isSaving ? "Menghapus..." : "Hapus"}
                         </button>
                       </div>
                     )}

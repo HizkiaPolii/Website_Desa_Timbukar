@@ -29,7 +29,7 @@ export interface UpdateApbdesInput {
   pendapatan?: number | string;
   belanja?: number | string;
   pembiayaan?: number | string;
-  file_dokumen?: string;
+  file_dokumen?: string | null;
 }
 
 /**
@@ -188,12 +188,45 @@ export const apbdesApi = {
 
   /**
    * Update APBDES (Admin only)
+   * Gunakan untuk update dengan file upload (form-data)
    */
   async update(id: number, input: UpdateApbdesInput): Promise<ApbdesData> {
     try {
       console.log("🔄 Updating: PUT", `${API_BASE_URL}/${id}`, input);
       const response = await fetchWithAuth(`${API_BASE_URL}/${id}`, {
         method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(input),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("❌ Error response:", errorData);
+        throw new Error(
+          errorData.error || `Failed to update: ${response.statusText}`
+        );
+      }
+
+      const result = await response.json();
+      console.log("✅ Updated:", result);
+      return result.data;
+    } catch (error) {
+      console.error(`❌ Error updating APBDES ${id}:`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update APBDES via PATCH (tanpa file upload)
+   * Gunakan untuk update data saja atau delete image
+   */
+  async updateJson(id: number, input: UpdateApbdesInput): Promise<ApbdesData> {
+    try {
+      console.log("🔄 Updating JSON: PATCH", `${API_BASE_URL}/${id}`, input);
+      const response = await fetchWithAuth(`${API_BASE_URL}/${id}`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },

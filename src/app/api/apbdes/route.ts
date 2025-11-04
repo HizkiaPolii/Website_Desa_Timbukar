@@ -31,18 +31,16 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Validasi data
+    // Validasi data - tahun, pendapatan, belanja wajib. file_dokumen opsional
     if (
       !body.tahun ||
-      !body.pendapatan ||
-      !body.belanja ||
-      !body.pembiayaan ||
-      !body.file_dokumen
+      body.pendapatan === undefined ||
+      body.belanja === undefined
     ) {
       return NextResponse.json(
         {
           error:
-            "Data tidak lengkap: tahun, pendapatan, belanja, pembiayaan, dan file_dokumen harus diisi",
+            "Data tidak lengkap: tahun, pendapatan, dan belanja harus diisi",
         },
         { status: 400 }
       );
@@ -56,31 +54,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!body.pendapatan || isNaN(parseFloat(body.pendapatan))) {
+    if (isNaN(parseFloat(body.pendapatan))) {
       return NextResponse.json(
         { error: "Pendapatan harus berupa angka valid" },
         { status: 400 }
       );
     }
 
-    if (!body.belanja || isNaN(parseFloat(body.belanja))) {
+    if (isNaN(parseFloat(body.belanja))) {
       return NextResponse.json(
         { error: "Belanja harus berupa angka valid" },
         { status: 400 }
       );
     }
 
-    if (!body.pembiayaan || isNaN(parseFloat(body.pembiayaan))) {
+    if (body.pembiayaan !== undefined && isNaN(parseFloat(body.pembiayaan))) {
       return NextResponse.json(
         { error: "Pembiayaan harus berupa angka valid" },
         { status: 400 }
       );
     }
 
-    // Validasi gambar (harus berupa URL/string)
-    if (typeof body.file_dokumen !== "string" || !body.file_dokumen.trim()) {
+    // Validasi file_dokumen - opsional, boleh kosong (untuk delete) atau string URL
+    if (
+      body.file_dokumen !== undefined &&
+      typeof body.file_dokumen !== "string"
+    ) {
       return NextResponse.json(
-        { error: "File dokumen harus berupa URL yang valid" },
+        { error: "File dokumen harus berupa string atau kosong" },
         { status: 400 }
       );
     }

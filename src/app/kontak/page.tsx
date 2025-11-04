@@ -94,7 +94,7 @@ export default function KontakDesa() {
     {
       icon: Clock,
       label: "Jam Operasional",
-      value: "Senin - Jumat: 08:00 - 16:00 WIT",
+      value: "Senin - Jumat: 08:00 - 16:00 WITA",
     },
   ];
 
@@ -317,25 +317,6 @@ export default function KontakDesa() {
             title="Desa Timbukar"
             subtitle="Kecamatan Sonder, Kabupaten Minahasa, Sulawesi Utara"
           />
-          <div className="mt-6 p-6 bg-green-50 rounded-2xl border-l-4 border-green-600">
-            <p className="text-gray-700">
-              <strong>📍 Lokasi Desa Timbukar</strong>
-              <br />
-              Kecamatan Sonder, Kabupaten Minahasa, Sulawesi Utara
-              <br />
-              <strong>✅ Peta 100% GRATIS</strong> - Menggunakan{" "}
-              <a
-                href="https://www.openstreetmap.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-green-600 hover:underline"
-              >
-                OpenStreetMap
-              </a>{" "}
-              tanpa biaya API selamanya
-              <br />� Klik marker untuk melihat informasi lokasi
-            </p>
-          </div>
         </section>
       </main>
 

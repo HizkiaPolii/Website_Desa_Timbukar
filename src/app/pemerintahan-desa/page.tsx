@@ -16,6 +16,7 @@ interface Posisi {
   foto: string;
   kontak: string;
   tugas?: string;
+  masaPeriode?: string;
 }
 
 interface Level {
@@ -94,6 +95,7 @@ export default function PemerintahanDesaPage() {
       foto: pegawai.foto || "/images/placeholder.svg",
       kontak: pegawai.noTelepon,
       tugas: undefined,
+      masaPeriode: pegawai.masaPeriode,
       kategori: pegawai.kategori,
     }));
   };
@@ -241,7 +243,7 @@ export default function PemerintahanDesaPage() {
             </p>
           </div>
 
-          {/* Section 1: Pemimpin Desa */}
+          {/* Section 1: Kepala Desa */}
           <div className="space-y-8">
             <div className="text-center">
               <div className="inline-block px-6 py-2 bg-gradient-to-r from-amber-100 to-orange-100 rounded-full border-2 border-amber-400 mb-6">
@@ -292,6 +294,14 @@ export default function PemerintahanDesaPage() {
                       <p className="text-base font-bold text-amber-700 mb-3">
                         {hukumTua.jabatan}
                       </p>
+                      <div className="bg-amber-100/80 rounded-xl py-2.5 px-4 mb-4 border border-amber-300">
+                        <p className="text-sm font-semibold text-amber-800">
+                          📅 Masa Periode:{" "}
+                          <span className="font-bold">
+                            {hukumTua.masaPeriode || "Belum ditentukan"}
+                          </span>
+                        </p>
+                      </div>
                       {hukumTua.tugas && (
                         <p className="text-sm text-gray-700 mb-4 italic">
                           {hukumTua.tugas}

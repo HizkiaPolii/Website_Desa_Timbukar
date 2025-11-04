@@ -10,6 +10,7 @@ export interface Pegawai {
   alamat: string;
   foto: string | null;
   kategori: "pemimpin_desa" | "perangkat_desa" | "perangkat_penunjang";
+  masaPeriode?: string;
   createdAt: string;
   updatedAt: string;
 }
