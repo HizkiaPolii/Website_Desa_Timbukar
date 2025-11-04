@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, X, Check } from "lucide-react";
 import Image from "next/image";
 
@@ -24,8 +24,30 @@ export default function ImageUploadField({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [preview, setPreview] = useState<string | null>(value || null);
+
+  // Validate value sebelum set preview
+  const isValidValue = (val: string | null | undefined): boolean => {
+    if (!val) return false;
+    // Valid jika full URL dari backend (http/https)
+    if (val.startsWith("http")) return true;
+    // Valid jika path dari uploads folder (yang sebenarnya ada)
+    if (val.startsWith("/uploads/")) return true;
+    // Jika path /images/... dari database lama, invalid (file tidak ada di disk)
+    // Jika hanya nama file tanpa path, invalid
+    return false;
+  };
+
+  const [preview, setPreview] = useState<string | null>(() => {
+    return isValidValue(value) && value ? value : null;
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync preview saat value prop berubah
+  useEffect(() => {
+    if (isValidValue(value) && value) {
+      setPreview(value);
+    }
+  }, [value]);
 
   const isValidImageFile = (file: File): boolean => {
     const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -96,8 +118,26 @@ export default function ImageUploadField({
       const data = await response.json();
       console.log("✅ Upload response received:", data);
 
-      const filePath =
-        data.filePath || data.publicPath || data.path || data.filename;
+      // Extract filePath dari berbagai format response backend
+      let filePath: string | undefined;
+
+      // Try multiple patterns
+      if (data.data?.url) {
+        filePath = data.data.url;
+        console.log("✅ Extracted from data.data.url:", filePath);
+      } else if (data.filePath) {
+        filePath = data.filePath;
+        console.log("✅ Extracted from data.filePath:", filePath);
+      } else if (data.publicPath) {
+        filePath = data.publicPath;
+        console.log("✅ Extracted from data.publicPath:", filePath);
+      } else if (data.path) {
+        filePath = data.path;
+        console.log("✅ Extracted from data.path:", filePath);
+      } else if (data.filename) {
+        filePath = data.filename;
+        console.log("✅ Extracted from data.filename:", filePath);
+      }
 
       if (!filePath) {
         throw new Error(
@@ -106,17 +146,27 @@ export default function ImageUploadField({
         );
       }
 
-      // Jika filePath hanya nama file (bukan URL full atau path absolut), tambahkan path lengkap
+      // Jika filePath adalah path relatif dari uploads (dari backend), convert ke full URL
       let finalPath = filePath;
-      // Only add prefix jika bukan URL penuh dan bukan path absolut
-      if (
+
+      if (filePath.startsWith("/uploads/")) {
+        // Backend return relative path /uploads/... convert to full URL
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_BASE_URL ||
+          "https://api.desatimbukar.id/api";
+        const baseUrl = apiUrl.replace("/api", "");
+        finalPath = `${baseUrl}${filePath}`;
+        console.log("🔄 Converted relative path to full URL:", finalPath);
+      } else if (
         filePath &&
         !filePath.startsWith("/") &&
         !filePath.startsWith("http")
       ) {
+        // Jika hanya nama file, tambahkan path lengkap
         finalPath = `/images/${uploadFolder}/${filePath}`;
         console.log("⚠️  Added folder prefix ->", finalPath);
       }
+      // Jika sudah full URL atau absolute path, gunakan as-is
 
       console.log("🟢 Final image path:", finalPath);
 
@@ -183,13 +233,13 @@ export default function ImageUploadField({
 
   const getPreviewUrl = (imagePath: string | null): string => {
     if (!imagePath) return "/images/placeholder.svg";
-    // Jika sudah full URL, kembalikan as-is
-    if (imagePath.startsWith("http")) return imagePath;
-    // Jika path absolut (dari Next.js API)
-    if (imagePath.startsWith("/images/")) return imagePath;
-    // Jika data URL
-    if (imagePath.startsWith("data:")) return imagePath;
-    // Jika sudah path lengkap dari backend uploads
+
+    // Jika sudah full URL (dari backend), gunakan langsung
+    if (imagePath.startsWith("http")) {
+      return imagePath;
+    }
+
+    // Jika dari /uploads/ folder (yang sebenarnya ada di backend)
     if (imagePath.startsWith("/uploads/")) {
       const apiUrl =
         process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -197,8 +247,15 @@ export default function ImageUploadField({
       const baseUrl = apiUrl.replace("/api", "");
       return `${baseUrl}${imagePath}`;
     }
-    // Jika hanya nama file (dari backend database), transform to /images/galeri/...
-    return `/images/galeri/${imagePath}`;
+
+    // Data URL
+    if (imagePath.startsWith("data:")) {
+      return imagePath;
+    }
+
+    // Path lain (seperti /images/pemerintahan/... dari DB lama) tidak valid
+    // Return placeholder untuk trigger onError
+    return "/images/placeholder.svg";
   };
 
   return (
@@ -215,69 +272,32 @@ export default function ImageUploadField({
         className="hidden"
       />
 
-      {preview ? (
-        <div className="space-y-3">
-          <div className="relative w-full aspect-square max-w-xs mx-auto rounded-lg overflow-hidden border-2 border-emerald-200 bg-gray-50">
-            <Image
-              src={getPreviewUrl(preview)}
-              alt="Preview"
-              fill
-              className="object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "/images/placeholder.svg";
-              }}
-            />
-            <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors" />
-          </div>
-
-          <div className="flex gap-2 justify-center">
-            <button
-              type="button"
-              onClick={handleClearAndReupload}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-            >
-              <Upload size={16} />
-              Ubah Foto
-            </button>
-            <button
-              type="button"
-              onClick={handleRemoveImage}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
-            >
-              <X size={16} />
-              Hapus
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-colors ${
-            isDragging
-              ? "border-emerald-600 bg-emerald-50"
-              : "border-gray-300 hover:border-emerald-500 hover:bg-gray-50"
-          } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
-        >
-          <Upload
-            size={28}
-            className={`mx-auto mb-3 sm:mb-4 ${
-              isDragging ? "text-emerald-600" : "text-gray-400"
-            }`}
-          />
-          <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1">
-            {isUploading ? "Mengunggah..." : placeholder}
-          </p>
-          <p className="text-xs text-gray-500">
-            {isUploading
-              ? "Mohon tunggu..."
-              : "JPG, PNG, GIF atau WebP (max 5MB)"}
-          </p>
-        </div>
-      )}
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+        className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-colors ${
+          isDragging
+            ? "border-emerald-600 bg-emerald-50"
+            : "border-gray-300 hover:border-emerald-500 hover:bg-gray-50"
+        } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
+      >
+        <Upload
+          size={28}
+          className={`mx-auto mb-3 sm:mb-4 ${
+            isDragging ? "text-emerald-600" : "text-gray-400"
+          }`}
+        />
+        <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1">
+          {isUploading ? "Mengunggah..." : placeholder}
+        </p>
+        <p className="text-xs text-gray-500">
+          {isUploading
+            ? "Mohon tunggu..."
+            : "JPG, PNG, GIF atau WebP (max 5MB)"}
+        </p>
+      </div>
 
       {uploadError && (
         <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -286,9 +306,34 @@ export default function ImageUploadField({
       )}
 
       {preview && !uploadError && (
-        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-          <Check size={16} className="text-green-600" />
-          <p className="text-sm text-green-800">Foto berhasil diunggah</p>
+        <div className="mt-3">
+          <div className="relative w-full h-64 rounded-lg overflow-hidden border border-green-200 bg-green-50">
+            <Image
+              src={getPreviewUrl(preview)}
+              alt="Preview"
+              fill
+              className="object-contain"
+              onError={(e) => {
+                console.error("❌ Image preview failed to load:", preview);
+                setPreview(null);
+                onChange(null);
+              }}
+            />
+          </div>
+          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Check size={16} className="text-green-600" />
+              <p className="text-sm text-green-800">Foto berhasil diunggah</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleRemoveImage}
+              className="text-green-600 hover:text-red-600 transition-colors"
+              title="Hapus foto"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
       )}
     </div>

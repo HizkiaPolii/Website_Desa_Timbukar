@@ -101,6 +101,13 @@ export default function EditPemerintahanDesaPage() {
   };
 
   const startEditing = (pegawai: Pegawai) => {
+    // Only set foto if it's a valid URL or path
+    let foto = pegawai.foto;
+    if (foto && !foto.startsWith("http") && !foto.startsWith("/")) {
+      // Jika bukan URL atau path, set kosong
+      foto = null;
+    }
+    
     setFormData({
       id: pegawai.id,
       nama: pegawai.nama,
@@ -108,7 +115,7 @@ export default function EditPemerintahanDesaPage() {
       nip: pegawai.nip,
       noTelepon: pegawai.noTelepon,
       alamat: pegawai.alamat,
-      foto: pegawai.foto,
+      foto: foto,
       kategori: pegawai.kategori || "perangkat_desa",
     });
     setEditingId(pegawai.id);
@@ -400,6 +407,7 @@ export default function EditPemerintahanDesaPage() {
                   onChange={(value) => handleInputChange("foto", value)}
                   label="Foto (Opsional)"
                   placeholder="Drag and drop foto atau klik untuk pilih"
+                  uploadFolder="pemerintahan"
                 />
               </div>
 
