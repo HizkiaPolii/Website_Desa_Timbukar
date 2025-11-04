@@ -197,6 +197,8 @@ export async function POST(request: NextRequest) {
       "bumdes",
       "galeri",
       "apbdes",
+      "lembaga",
+      "rkpdesa",
       "general",
     ];
     if (!allowedFolders.includes(folder)) {

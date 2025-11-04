@@ -64,83 +64,98 @@ export default function LembagaMasyarakatPage() {
           Belum ada data lembaga masyarakat
         </div>
       ) : (
-        lembaga.map((item) => (
-          <section key={item.id} className="mb-12">
-            <div className="section-box-blue">
-              <h2 className="section-title">{item.nama}</h2>
+        <div className="space-y-8 sm:space-y-12 lg:space-y-16">
+          {lembaga.map((item, index) => {
+            const colors = ["blue", "green", "cyan", "amber"];
+            const color = colors[index % colors.length];
 
-              {/* Gambar */}
-              {item.gambar && (
-                <div className="mb-8">
-                  <Image
-                    src={item.gambar}
-                    alt={item.nama}
-                    width={300}
-                    height={200}
-                    className="w-full max-w-md h-auto rounded-lg shadow-md"
-                  />
-                </div>
-              )}
+            const bgColorMap: { [key: string]: string } = {
+              blue: "section-box-blue",
+              green: "section-box-green",
+              cyan: "section-box-blue",
+              amber: "section-box-amber",
+            };
 
-              {/* Deskripsi */}
-              {item.deskripsi && (
-                <div className="mb-8">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">
-                    📋 Deskripsi
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                    {item.deskripsi}
-                  </p>
-                </div>
-              )}
+            return (
+              <div
+                key={item.id}
+                className={`${bgColorMap[color]} shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden rounded-xl`}
+              >
+                {/* Layout: Deskripsi Kiri, Gambar Kanan */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 p-6 sm:p-8 lg:p-10">
+                  {/* Konten Kiri - Deskripsi */}
+                  <div className="flex flex-col justify-center">
+                    {/* Nama Lembaga - Sangat Besar */}
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                      {item.nama}
+                    </h2>
 
-              {/* Ketua */}
-              {item.ketua && (
-                <div className="mb-8">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">
-                    � Ketua Lembaga
-                  </h3>
-                  <div className="bg-white p-4 sm:p-6 rounded border-l-4 border-blue-400">
-                    <p className="text-gray-700 text-sm sm:text-base">
-                      {item.ketua}
-                    </p>
+                    {/* Separator Line */}
+                    <div className="w-16 h-1 bg-emerald-500 mb-6 rounded-full"></div>
+
+                    {/* Deskripsi - Besar dan Readable */}
+                    {item.deskripsi && (
+                      <p className="text-gray-700 mb-8 text-base sm:text-lg lg:text-xl leading-relaxed lg:leading-9">
+                        {item.deskripsi}
+                      </p>
+                    )}
+
+                    {/* Info Tambahan - Besar */}
+                    <div className="text-base sm:text-lg lg:text-xl text-gray-700 space-y-5">
+                      {item.ketua && (
+                        <div className="flex flex-col">
+                          <span className="font-bold text-gray-900 mb-1">
+                            Ketua Lembaga
+                          </span>
+                          <span className="text-gray-700 text-lg">
+                            {item.ketua}
+                          </span>
+                        </div>
+                      )}
+                      {item.alamat && (
+                        <div className="flex flex-col">
+                          <span className="font-bold text-gray-900 mb-1">
+                            Alamat
+                          </span>
+                          <span className="text-gray-700 text-lg">
+                            {item.alamat}
+                          </span>
+                        </div>
+                      )}
+                      {item.noTelepon && (
+                        <div className="flex flex-col">
+                          <span className="font-bold text-gray-900 mb-1">
+                            Telepon
+                          </span>
+                          <a
+                            href={`tel:${item.noTelepon}`}
+                            className="text-blue-600 hover:text-blue-800 text-lg font-semibold"
+                          >
+                            {item.noTelepon}
+                          </a>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
 
-              {/* Alamat */}
-              {item.alamat && (
-                <div className="mb-8">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">
-                    📍 Alamat
-                  </h3>
-                  <div className="bg-white p-4 sm:p-6 rounded border-l-4 border-green-400">
-                    <p className="text-gray-700 text-sm sm:text-base">
-                      {item.alamat}
-                    </p>
-                  </div>
+                  {/* Gambar Kanan - Sangat Besar */}
+                  {item.gambar && (
+                    <div className="flex items-center justify-center">
+                      <Image
+                        src={item.gambar}
+                        alt={item.nama}
+                        width={600}
+                        height={600}
+                        className="w-full h-auto object-cover rounded-xl shadow-lg"
+                        unoptimized={true}
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
-
-              {/* No. Telepon */}
-              {item.noTelepon && (
-                <div className="mb-8">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">
-                    📞 Nomor Telepon
-                  </h3>
-                  <div className="bg-white p-4 sm:p-6 rounded border-l-4 border-purple-400">
-                    <a
-                      href={`tel:${item.noTelepon}`}
-                      className="text-blue-600 hover:text-blue-800 text-sm sm:text-base font-semibold"
-                    >
-                      {item.noTelepon}
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
-        ))
+              </div>
+            );
+          })}
+        </div>
       )}
     </PageLayout>
   );

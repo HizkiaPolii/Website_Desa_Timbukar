@@ -197,13 +197,12 @@ export default function PemerintahanDesaPage() {
             </p>
           )}
           {posisi.kontak !== "-" && (
-            <a
-              href={`tel:${posisi.kontak}`}
-              className={`inline-flex items-center justify-center gap-2 text-xs ${config.button} text-white px-4 py-2 rounded-lg transition-colors font-medium`}
+            <div
+              className={`inline-flex items-center justify-center gap-2 text-xs ${config.button} text-white px-4 py-2 rounded-lg font-medium`}
             >
               <Phone className="w-4 h-4" />
               {posisi.kontak}
-            </a>
+            </div>
           )}
         </div>
       </div>

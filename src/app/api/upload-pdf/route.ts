@@ -21,13 +21,14 @@ const shouldUseBackendAPI = (): boolean => {
 async function uploadToBackendAPI(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("folder", "rkpdesa");
 
   try {
-    console.log(`📤 Uploading PDF to Backend API: ${API_BASE_URL}/upload/pdf`);
+    console.log(
+      `📤 Uploading PDF to Backend API: ${API_BASE_URL}/upload?folder=rkpdesa`
+    );
     console.log(`   File: ${file.name}, Size: ${file.size} bytes`);
 
-    const response = await fetch(`${API_BASE_URL}/upload/pdf`, {
+    const response = await fetch(`${API_BASE_URL}/upload?folder=rkpdesa`, {
       method: "POST",
       body: formData,
       signal: AbortSignal.timeout(30000), // 30 second timeout
