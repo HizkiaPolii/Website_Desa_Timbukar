@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { X, Search, Filter } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import { showToast } from "@/utils/toast";
 
@@ -31,6 +31,7 @@ export default function GaleriPage() {
     src: string;
     judul: string;
   } | null>(null);
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
 
   const categories = [
     { id: "semua", label: "Semua Kategori" },
@@ -91,6 +92,26 @@ export default function GaleriPage() {
     setFilteredData(filtered);
   }, [selectedCategory, searchQuery, galeriData]);
 
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedImage(null);
+      }
+    };
+
+    if (selectedImage) {
+      document.addEventListener("keydown", handleEscKey);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscKey);
+      document.body.style.overflow = "unset";
+    };
+  }, [selectedImage]);
+
   const getImageUrl = (imagePath: string | null | undefined): string => {
     if (!imagePath) return "/images/placeholder.svg";
     // Jika sudah full URL (http/https), kembalikan as-is
@@ -108,175 +129,82 @@ export default function GaleriPage() {
       heroTitle="Galeri Desa Timbukar"
       heroSubtitle="Jelajahi keindahan dan kegiatan masyarakat Desa Timbukar"
     >
-      <div className="w-full bg-gray-50 py-4 sm:py-6 md:py-8 lg:py-12">
-        {/* Mobile Layout */}
-        <div className="md:hidden mx-auto w-full px-3">
-          {/* Search */}
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Cari galeri..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-normal transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-            />
+      <div className="w-full bg-white py-8 md:py-12 lg:py-16">
+        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-7xl">
+          {/* Header Section */}
+          <div className="mb-8 md:mb-12 lg:mb-16">
+            <div className="flex flex-col gap-4 md:gap-6">
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Cari galeri berdasarkan judul atau deskripsi..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-11 pr-4 text-sm md:text-base font-normal transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+
+              {/* Category Filter */}
+              <div className="flex flex-wrap gap-2 md:gap-3">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`inline-flex items-center rounded-lg px-3 sm:px-4 md:px-5 py-2 md:py-2.5 text-xs sm:text-sm md:text-base font-medium transition-all duration-200 whitespace-nowrap ${
+                      selectedCategory === cat.id
+                        ? "bg-emerald-600 text-white shadow-md"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200"
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Category Filter */}
-          <div className="mb-4 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`flex-shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-200 ${
-                  selectedCategory === cat.id
-                    ? "bg-emerald-600 text-white shadow-md"
-                    : "bg-white text-gray-700 border border-gray-200"
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Loading */}
+          {/* Loading State */}
           {loading && (
-            <div className="flex items-center justify-center py-12">
-              <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-emerald-600"></div>
+            <div className="flex items-center justify-center py-20 md:py-32">
+              <div className="flex flex-col items-center gap-4">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-emerald-600"></div>
+                <p className="text-gray-500 text-sm md:text-base">
+                  Memuat galeri...
+                </p>
+              </div>
             </div>
           )}
 
-          {/* Gallery Grid - Mobile */}
+          {/* Gallery Grid */}
           {!loading && filteredData.length > 0 && (
-            <div className="grid gap-3 grid-cols-1">
+            <div className="grid gap-4 sm:gap-5 md:gap-6 lg:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredData.map((galeri) => (
                 <div
                   key={galeri.id}
-                  className="group flex overflow-hidden rounded-lg bg-white shadow-sm transition-all duration-300 active:shadow-md cursor-pointer"
                   onClick={() =>
                     setSelectedImage({
                       src: getImageUrl(galeri.gambar),
                       judul: galeri.judul,
                     })
                   }
+                  className="group flex flex-col overflow-hidden rounded-xl bg-white hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
                 >
-                  {/* Image - Mobile Horizontal */}
-                  <div className="relative w-24 h-24 flex-shrink-0 overflow-hidden bg-gray-200">
+                  {/* Image Container */}
+                  <div className="relative w-full overflow-hidden bg-gray-200 aspect-square sm:aspect-video">
                     <Image
                       src={getImageUrl(galeri.gambar)}
                       alt={galeri.judul}
                       fill
-                      className="object-cover transition-transform duration-300 group-active:scale-110"
-                      sizes="96px"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
-                    <div className="absolute inset-0 bg-black/0 transition-all duration-300 group-active:bg-black/10" />
-                  </div>
-
-                  {/* Content - Mobile */}
-                  <div className="flex flex-1 flex-col justify-between p-2.5">
-                    <div>
-                      <h3 className="line-clamp-1 text-sm font-bold text-gray-900">
-                        {galeri.judul}
-                      </h3>
-                      <p className="line-clamp-1 text-xs text-gray-600">
-                        {galeri.deskripsi}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-gray-500">
-                        {new Date(galeri.created_at).toLocaleDateString(
-                          "id-ID"
-                        )}
-                      </p>
-                      <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white">
-                        {categories.find(
-                          (c) =>
-                            c.id.toLowerCase() ===
-                            (galeri.kategori?.toLowerCase() || "")
-                        )?.label || galeri.kategori}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Empty State - Mobile */}
-          {!loading && filteredData.length === 0 && (
-            <div className="flex items-center justify-center py-12">
-              <p className="text-center text-sm text-gray-500">
-                {galeriData.length === 0
-                  ? "Belum ada galeri"
-                  : "Tidak ada hasil"}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Desktop Layout */}
-        <div className="hidden md:block mx-auto w-full max-w-6xl px-6 lg:px-8">
-          {/* Search */}
-          <div className="mb-8">
-            <input
-              type="text"
-              placeholder="Cari galeri..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base font-normal transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-            />
-          </div>
-
-          {/* Category Filter */}
-          <div className="mb-8 flex gap-3 overflow-x-auto pb-2">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`flex-shrink-0 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-200 ${
-                  selectedCategory === cat.id
-                    ? "bg-emerald-600 text-white shadow-md hover:shadow-lg"
-                    : "bg-white text-gray-700 border border-gray-200 hover:border-emerald-600 hover:text-emerald-600"
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Loading */}
-          {loading && (
-            <div className="flex items-center justify-center py-20">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-emerald-600"></div>
-            </div>
-          )}
-
-          {/* Gallery Grid - Desktop */}
-          {!loading && filteredData.length > 0 && (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredData.map((galeri) => (
-                <div
-                  key={galeri.id}
-                  className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
-                  onClick={() =>
-                    setSelectedImage({
-                      src: getImageUrl(galeri.gambar),
-                      judul: galeri.judul,
-                    })
-                  }
-                >
-                  {/* Image Container - Fixed Aspect Ratio */}
-                  <div className="relative w-full aspect-video overflow-hidden bg-gray-200">
-                    <Image
-                      src={getImageUrl(galeri.gambar)}
-                      alt={galeri.judul}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-110"
-                      sizes="(max-width: 1024px) 50vw, 33vw"
-                    />
+                    {/* Overlay */}
                     <div className="absolute inset-0 bg-black/0 transition-all duration-300 group-hover:bg-black/20" />
+
                     {/* Category Badge */}
-                    <div className="absolute right-3 top-3 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md">
+                    <div className="absolute right-2 top-2 sm:right-3 sm:top-3 rounded-lg bg-emerald-600 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-xs font-semibold text-white shadow-lg">
                       {categories.find(
                         (c) =>
                           c.id.toLowerCase() ===
@@ -286,117 +214,90 @@ export default function GaleriPage() {
                   </div>
 
                   {/* Content */}
-                  <div className="flex flex-1 flex-col p-5">
-                    <h3 className="mb-2 line-clamp-2 text-base font-bold text-gray-900">
+                  <div className="flex flex-1 flex-col p-3 sm:p-4 md:p-5">
+                    <h3 className="line-clamp-2 text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-1.5 md:mb-2 group-hover:text-emerald-600 transition-colors">
                       {galeri.judul}
                     </h3>
-                    <p className="mb-3 flex-1 line-clamp-2 text-sm text-gray-600">
+                    <p className="line-clamp-2 text-xs sm:text-sm text-gray-600 mb-3 md:mb-4 flex-grow">
                       {galeri.deskripsi}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(galeri.created_at).toLocaleDateString("id-ID")}
-                    </p>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>
+                        {new Date(galeri.created_at).toLocaleDateString(
+                          "id-ID",
+                          { year: "numeric", month: "short", day: "numeric" }
+                        )}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Empty State - Desktop */}
+          {/* Empty State */}
           {!loading && filteredData.length === 0 && (
-            <div className="flex items-center justify-center py-20">
-              <p className="text-lg text-gray-500">
+            <div className="flex flex-col items-center justify-center py-20 md:py-32">
+              <div className="rounded-full bg-gray-100 p-4 mb-4">
+                <Search className="h-8 w-8 text-gray-400" />
+              </div>
+              <p className="text-center text-gray-500 text-base md:text-lg">
                 {galeriData.length === 0
-                  ? "Belum ada galeri yang tersedia"
-                  : "Tidak ada galeri yang cocok dengan pencarian Anda"}
+                  ? "Belum ada galeri yang ditambahkan"
+                  : "Tidak ada galeri yang sesuai dengan pencarian Anda"}
               </p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Lightbox Modal - Mobile Version (< 768px) */}
+      {/* Image Lightbox Modal */}
       {selectedImage && (
-        <>
-          {/* Mobile Modal */}
-          <div className="fixed inset-0 z-50 flex flex-col bg-black/70 md:hidden">
-            {/* Close Button - Mobile */}
-            <div className="flex items-center justify-between bg-black px-4 py-3">
-              <h3 className="text-white font-semibold text-sm truncate flex-1">
-                {selectedImage.judul}
-              </h3>
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Image Container - Mobile */}
-            <div className="relative flex-1 w-full overflow-auto bg-black">
-              <Image
-                src={selectedImage.src}
-                alt={selectedImage.judul}
-                fill
-                className="object-contain"
-                priority
-                sizes="100vw"
-              />
-            </div>
-
-            {/* Title & Info - Mobile */}
-            <div className="bg-black px-4 py-3 border-t border-gray-800">
-              <h2 className="text-white text-base font-bold break-words mb-2">
-                {selectedImage.judul}
-              </h2>
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="w-full rounded-lg bg-emerald-600 py-2.5 text-center text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
-              >
-                Tutup
-              </button>
-            </div>
-          </div>
-
-          {/* Desktop Modal */}
-          <div
-            className="hidden md:fixed md:inset-0 md:z-50 md:flex md:items-center md:justify-center bg-black/85 md:p-4 lg:p-8"
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 animate-fadeIn overflow-y-auto"
+          onClick={() => setSelectedImage(null)}
+        >
+          {/* Close Button */}
+          <button
             onClick={() => setSelectedImage(null)}
+            className="fixed right-4 top-4 z-50 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white/10 text-white transition-all hover:bg-white/20 active:bg-white/30 backdrop-blur-sm"
           >
-            <div
-              className="relative w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl flex flex-col overflow-hidden rounded-2xl bg-white shadow-2xl max-h-[95vh] lg:max-h-screen"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Close Button - Desktop */}
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="absolute right-5 top-5 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white hover:bg-gray-100 text-gray-800 transition-colors shadow-lg hover:shadow-xl"
-              >
-                <X size={28} />
-              </button>
+            <X size={24} className="md:w-7 md:h-7" />
+          </button>
 
-              {/* Image Container - Desktop (Much Larger) */}
-              <div className="relative w-full flex-1 overflow-auto bg-gray-900">
+          {/* Container */}
+          <div
+            className="flex flex-col items-center justify-center w-full min-h-screen p-4 sm:p-6 md:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Image Wrapper - Responsive Size */}
+            <div className="relative w-full max-w-2xl md:max-w-4xl lg:max-w-6xl mb-6 md:mb-8">
+              <div className="relative w-full aspect-auto">
                 <Image
                   src={selectedImage.src}
                   alt={selectedImage.judul}
-                  fill
-                  className="object-contain"
+                  width={1200}
+                  height={800}
+                  className="w-full h-auto max-h-[60vh] md:max-h-[75vh] object-contain rounded-lg"
                   priority
-                  sizes="(max-width: 1024px) 95vw, 90vw"
+                  quality={90}
                 />
               </div>
-
-              {/* Title Section - Desktop */}
-              <div className="border-t border-gray-300 bg-white px-8 py-6 lg:py-8 overflow-y-auto max-h-32">
-                <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 break-words">
-                  {selectedImage.judul}
-                </h2>
-              </div>
             </div>
+
+            {/* Title Section */}
+            <div className="w-full max-w-2xl md:max-w-4xl lg:max-w-6xl bg-white/10 backdrop-blur-md rounded-lg p-4 md:p-6 border border-white/20">
+              <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white break-words">
+                {selectedImage.judul}
+              </h2>
+            </div>
+
+            {/* Keyboard Hint */}
+            <p className="text-white/60 text-xs sm:text-sm mt-4 md:mt-6">
+              Tekan ESC atau klik di luar untuk menutup
+            </p>
           </div>
-        </>
+        </div>
       )}
     </PageLayout>
   );
