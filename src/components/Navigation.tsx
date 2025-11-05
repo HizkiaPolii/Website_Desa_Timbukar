@@ -153,15 +153,34 @@ export default function Navigation({ currentPage = "home" }: NavProps) {
         <div className="max-w-full px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="flex justify-between items-center py-2 sm:py-3">
             <Link href="/" className="flex items-center gap-2 lg:gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
-                <Image
-                  src="/images/logo.png"
-                  alt="Logo Desa Timbukar"
-                  width={48}
-                  height={48}
-                  className="w-full h-full object-contain"
-                />
+              {/* Logo Section */}
+              <div className="flex items-center gap-2 lg:gap-3">
+                {/* Desa Timbukar Logo */}
+                <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+                  <Image
+                    src="/images/logo.png"
+                    alt="Logo Desa Timbukar"
+                    width={48}
+                    height={48}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                {/* Collaboration Symbol */}
+                <div className="hidden sm:flex text-white font-light text-lg lg:text-xl">
+                  ×
+                </div>
+                {/* UNSRAT Logo */}
+                <div className="w-10 h-10 sm:w-12 sm:h-12 items-center justify-center hidden sm:flex">
+                  <Image
+                    src="/images/Logo_unsrat.png"
+                    alt="Logo UNSRAT"
+                    width={48}
+                    height={48}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
               </div>
+              {/* Text Section */}
               <div>
                 <h1 className="text-xs sm:text-base md:text-lg font-bold text-white leading-tight">
                   DESA TIMBUKAR
