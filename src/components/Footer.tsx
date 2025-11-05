@@ -74,6 +74,12 @@ export default function Footer() {
             <p className="text-xs sm:text-sm text-gray-300 mt-1">
               Didesain dan disusun oleh Mahasiswa KKT 144 Unsrat Posko Timbukar
             </p>
+            <Link
+              href="/about-us"
+              className="inline-block mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-md transition-colors"
+            >
+              📖 Tentang Kami
+            </Link>
           </div>
         </div>
       </div>
