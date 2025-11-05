@@ -176,7 +176,10 @@ export default function AboutUs() {
                     <div className="space-y-1 sm:space-y-1.5 mb-3 flex-grow">
                       <div className="flex items-center gap-1.5 text-emerald-600 font-semibold">
                         <span className="text-base sm:text-lg">🎓</span>
-                        <span className="text-xs sm:text-sm">{member.nim}</span>
+                        <div className="flex flex-col text-xs sm:text-sm">
+                          <span className="text-emerald-700 text-xs">NIM:</span>
+                          <span className="truncate">{member.nim}</span>
+                        </div>
                       </div>
                       <div className="flex items-center gap-1.5 text-blue-600 font-semibold">
                         <span className="text-base sm:text-lg">📚</span>
