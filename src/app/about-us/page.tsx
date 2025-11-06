@@ -65,7 +65,7 @@ const teamMembers: TeamMember[] = [
   {
     id: 7,
     name: "Reva Felicia Parinding",
-    nim: "231111010120",
+    nim: "221111010120",
     fakultas: "Kesehatan Masyarakat",
     prodi: "Ilmu Kesehatan Masyarakat",
     image: "/images/team/reva.jpg",
