@@ -121,7 +121,7 @@ export default function DesaTimbukar() {
                 </p>
                 <div className="pt-6 border-t border-gray-200">
                   <p className="text-sm sm:text-base font-bold text-gray-900">
-                    DENNY ENGKA
+                    DENNY M. A. ENGKA, SE
                     <br />
                     <span className="text-gray-700 text-xs sm:text-sm">
                       HUKUM TUA DESA TIMBUKAR
